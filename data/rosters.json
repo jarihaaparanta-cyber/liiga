@@ -1,0 +1,65 @@
+{
+  "_comment": "Lähtökokoonpanot kuvakaappauksen mukaan. player_id täytetään liiga.fi:n pelaaja-ID:llä nimen ja seuran perusteella skriptillä scripts/resolve-players.ts. Tarkista nimet ennen käyttöönottoa.",
+  "teams": [
+    {
+      "id": "apa",
+      "name": "Apa",
+      "color": "#1a56db",
+      "sort_order": 1,
+      "roster": [
+        { "position": "F", "starter": true,  "name": "Santeri Huovila",   "club": "JYP" },
+        { "position": "F", "starter": true,  "name": "Lukas Wernblom",    "club": "TPS" },
+        { "position": "F", "starter": true,  "name": "Brendan Ranford",   "club": "HPK" },
+        { "position": "D", "starter": true,  "name": "Jyrki Jokipakka",   "club": "Tappara" },
+        { "position": "D", "starter": true,  "name": "Alexis Binner",     "club": "TPS" },
+        { "position": "F", "starter": false, "name": "Alexander Forslund","club": "Jokerit" },
+        { "position": "D", "starter": false, "name": "Chad Nychuk",       "club": "HPK" }
+      ]
+    },
+    {
+      "id": "jarde",
+      "name": "Jarde",
+      "color": "#e8500a",
+      "sort_order": 2,
+      "roster": [
+        { "position": "F", "starter": true,  "name": "Maxime Fortier",    "club": "Jokerit" },
+        { "position": "F", "starter": true,  "name": "Harri Pesonen",     "club": "JYP" },
+        { "position": "F", "starter": true,  "name": "Henri Nikkanen",    "club": "Jokerit" },
+        { "position": "D", "starter": true,  "name": "Simon Åkerström",   "club": "Sport" },
+        { "position": "D", "starter": true,  "name": "Santeri Airola",    "club": "SaiPa" },
+        { "position": "F", "starter": false, "name": "Mikael Ruohomaa",   "club": "Lukko" },
+        { "position": "D", "starter": false, "name": "Kristian Näkyvä",   "club": "K-Espoo" }
+      ]
+    },
+    {
+      "id": "borje",
+      "name": "Börje",
+      "color": "#0e9b62",
+      "sort_order": 3,
+      "roster": [
+        { "position": "F", "starter": true,  "name": "Benjamin Rautiainen","club": "Tappara" },
+        { "position": "F", "starter": true,  "name": "Jere Lassila",       "club": "JYP" },
+        { "position": "F", "starter": true,  "name": "Roni Hirvonen",      "club": "Kärpät" },
+        { "position": "D", "starter": true,  "name": "Sami Vatanen",       "club": "JYP" },
+        { "position": "D", "starter": true,  "name": "Matt Caito",         "club": "Jokerit" },
+        { "position": "F", "starter": false, "name": "Michael Lindqvist",  "club": "Tappara" },
+        { "position": "D", "starter": false, "name": "Juuso Arola",        "club": "JYP" }
+      ]
+    },
+    {
+      "id": "niksu",
+      "name": "Niksu",
+      "color": "#7a1fd0",
+      "sort_order": 4,
+      "roster": [
+        { "position": "F", "starter": true,  "name": "Joachim Blichfeld",  "club": "Tappara" },
+        { "position": "F", "starter": true,  "name": "Lukas Jasek",        "club": "Ilves" },
+        { "position": "F", "starter": true,  "name": "Teemu Turunen",      "club": "Jokerit" },
+        { "position": "D", "starter": true,  "name": "Jakob Stenqvist",    "club": "Lukko" },
+        { "position": "D", "starter": true,  "name": "Jiri Ticháček",      "club": "Kärpät" },
+        { "position": "F", "starter": false, "name": "Leevi Tukiainen",    "club": "JYP" },
+        { "position": "D", "starter": false, "name": "Ville Ruotsalainen", "club": "KalPa" }
+      ]
+    }
+  ]
+}

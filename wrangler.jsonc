@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "liigaporssi",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+
+  // Staattinen sivusto tarjoillaan samasta Workerista kuin API.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "liigaporssi",
+      // Täytä `wrangler d1 create liigaporssi` -komennon antamalla ID:llä.
+      "database_id": "PLACEHOLDER_TAYTA_TAMA",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Cloudflaren cron on aina UTC:ssä. Suomen aika on kesällä UTC+3 ja
+  // talvella UTC+2, joten sama kellonaika ajetaan molemmilla siirtymillä ja
+  // varsinainen suoritus rajataan koodissa Helsingin paikallisajan mukaan.
+  //   18:30 / 19:30 UTC -> 21:30 Suomen aikaa (iltapäivitys sivustolle)
+  //   01:00 / 02:00 UTC -> 04:00 Suomen aikaa (yön korjausajo)
+  "triggers": {
+    "crons": ["30 18 * * *", "30 19 * * *", "0 1 * * *", "0 2 * * *"]
+  },
+
+  "vars": {
+    // Liigan kausi API:n merkintätavalla: kausi 2026-27 on "2027".
+    "SEASON": "2027",
+    // Runkosarjan ensimmäinen mahdollinen ottelupäivä. Avausviisikko kerryttää
+    // pisteitä tästä päivästä alkaen.
+    "SEASON_START": "2026-09-01"
+  },
+
+  "observability": { "enabled": true }
+}
