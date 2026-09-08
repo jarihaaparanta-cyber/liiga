@@ -1,0 +1,373 @@
+/*
+ * Stiga Pörssi. Tumma halli-ilme, joka jatkaa yläbannerin tunnelmaa.
+ * Sivusto on tarkoituksella vain tummana: banneri on tumma, ja vaalea
+ * versio näyttäisi siihen liimatulta.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --surface:        #131417;
+  --surface-raised: #1b1d22;
+  --surface-sunken: #0e0f12;
+  --line:           #2a2d34;
+  --line-strong:    #3a3e47;
+
+  --ink:            #f2f4f7;
+  --ink-secondary:  #b9bfc9;
+  --ink-muted:      #848b96;
+
+  /* Joukkueiden paitavärit. Hienosäädetty niin että ne erottuvat
+     toisistaan myös värinäön poikkeavuuksissa; ks. docs/design.md. */
+  --apa:   #2E6FE0;
+  --jarde: #B98600;
+  --borje: #E62E4D;
+  --niksu: #00A878;
+
+  --good:    #2FA36B;
+  --warning: #D9A404;
+
+  --radius: 10px;
+  --pad: clamp(1rem, 3vw, 1.75rem);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+
+.skip {
+  position: absolute; left: -9999px;
+  background: var(--ink); color: var(--surface); padding: .6rem 1rem; z-index: 10;
+}
+.skip:focus { left: .5rem; top: .5rem; }
+
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid #7aa7ff;
+  outline-offset: 2px;
+}
+
+/* ---------- Banneri ---------- */
+
+.hero { background: var(--surface-sunken); }
+
+.hero__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46vh;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+/* Jos kuvatiedostoa ei ole vielä lisätty, näytetään sen tilalla
+   selkeä paikkamerkki eikä rikkinäistä kuvaa. */
+.is-missing {
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  padding: 1.5rem;
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--ink-muted);
+  font-size: .875rem;
+  text-align: center;
+}
+
+/* ---------- Rakenne ---------- */
+
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--pad);
+  display: grid;
+  gap: var(--pad);
+}
+
+.panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--pad);
+}
+
+.panel__head {
+  display: flex; flex-wrap: wrap; gap: .75rem;
+  align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.panel h2 {
+  font-size: .8125rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+/* ---------- Kärkitilanne ---------- */
+
+.leaderboard {
+  list-style: none; margin: 1rem 0 0; padding: 0;
+  display: grid; gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.rank {
+  position: relative;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--team);
+  border-radius: var(--radius);
+  padding: .875rem 1rem;
+  display: grid; gap: .125rem;
+}
+
+.rank__place { font-size: .75rem; color: var(--ink-muted); }
+.rank__name  { font-size: 1.0625rem; font-weight: 650; }
+.rank__points {
+  font-size: 2.25rem; font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.rank__unit { font-size: .8125rem; color: var(--ink-secondary); }
+
+/* ---------- Kuvaaja ---------- */
+
+.chart { margin: 0; }
+
+.chart__canvas {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.chart-wrap svg { display: block; width: 100%; height: auto; min-width: 520px; }
+.legend svg { display: block; width: 34px; height: 12px; }
+
+.chart__caption {
+  margin-top: .75rem;
+  font-size: .8125rem;
+  color: var(--ink-muted);
+  max-width: 62ch;
+}
+
+.grid-line { stroke: var(--line); stroke-width: 1; }
+.axis-text { fill: var(--ink-muted); font-size: 12px; }
+.series-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.series-dot { stroke: var(--surface-raised); stroke-width: 2; }
+.series-label { font-size: 12px; font-weight: 650; }
+.crosshair { stroke: var(--line-strong); stroke-width: 1; }
+
+.toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.toggle__btn {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  color: var(--ink-secondary); font: inherit; font-size: .8125rem;
+  padding: .35rem .9rem; border-radius: 999px;
+}
+.toggle__btn.is-on { background: var(--line); color: var(--ink); }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: .25rem 1.25rem;
+  margin: 0 0 .75rem; padding: 0; list-style: none;
+  font-size: .8125rem; color: var(--ink-secondary);
+}
+.legend li { display: flex; align-items: center; gap: .45rem; }
+.legend svg { flex: none; }
+
+/* Vihjelaatikko kuvaajan päällä. */
+.tip {
+  position: absolute; z-index: 3; pointer-events: none;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px; padding: .5rem .7rem;
+  font-size: .8125rem; white-space: nowrap;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .45);
+}
+.tip__date { color: var(--ink-muted); margin-bottom: .35rem; }
+.tip__row { display: flex; align-items: center; gap: .5rem; }
+.tip__swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.tip__value { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 650; }
+
+.chart-wrap { position: relative; }
+
+/* ---------- Joukkuetaulukot ---------- */
+
+.teams {
+  display: grid; gap: var(--pad);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 860px) { .teams { grid-template-columns: 1fr; } }
+
+.team {
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.team__head {
+  background: var(--team);
+  color: var(--team-ink, #fff);
+  padding: .6rem .9rem;
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.team__name { font-size: 1.0625rem; font-weight: 700; letter-spacing: .01em; }
+.team__swaps { font-size: .75rem; opacity: .85; }
+
+table { width: 100%; border-collapse: collapse; font-size: .8125rem; table-layout: fixed; }
+.team col.c-role   { width: 6.6rem; }
+.team col.c-club   { width: 4.2rem; }
+.team col.c-num    { width: 2.1rem; }
+.team col.c-points { width: 2.6rem; }
+
+thead th {
+  text-align: right;
+  font-size: .625rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-muted); font-weight: 600;
+  padding: .45rem .35rem; border-bottom: 1px solid var(--line);
+  background: var(--surface-raised);
+}
+thead th[title] { cursor: help; }
+thead th:first-child, thead th:nth-child(2) { text-align: left; }
+
+tbody td { padding: .4rem .35rem; border-bottom: 1px solid var(--line); text-align: right; }
+.col-player { overflow-wrap: anywhere; }
+tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
+tbody tr:last-child td { border-bottom: 0; }
+
+.col-role { color: var(--ink-muted); font-size: .6875rem; line-height: 1.3; padding-right: .5rem; }
+.col-player { font-weight: 550; }
+.col-club { color: var(--ink-secondary); font-size: .8125rem; }
+.num { font-variant-numeric: tabular-nums; }
+.col-points { font-weight: 700; }
+
+/* Varapelaajat erottuvat: he eivät kerrytä pisteitä ennen vaihtoa. */
+.row-sub td { color: var(--ink-muted); font-style: italic; }
+.row-sub .col-points { color: var(--ink-secondary); }
+.row-swapped-out td { opacity: .55; }
+
+.bench-note { font-style: normal; font-size: .6875rem; color: var(--ink-muted); }
+
+.team__total {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; padding: .7rem .9rem;
+  background: var(--surface-raised);
+  border-top: 1px solid var(--line-strong);
+}
+.team__total-label {
+  font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-muted); font-weight: 600;
+}
+.team__total-value { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.team__foot { padding: .7rem .9rem; display: grid; gap: .5rem; }
+.team__swap-log { font-size: .75rem; color: var(--ink-muted); margin: 0; }
+
+/* ---------- Napit ---------- */
+
+.btn {
+  appearance: none; cursor: pointer; font: inherit; font-size: .875rem; font-weight: 600;
+  border-radius: 8px; padding: .55rem 1rem; border: 1px solid var(--line-strong);
+  background: var(--surface-raised); color: var(--ink);
+}
+.btn:hover:not(:disabled) { border-color: var(--ink-muted); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn--go { background: #2b5fc4; border-color: #2b5fc4; color: #fff; }
+.btn--go:hover:not(:disabled) { background: #3670da; }
+.btn--ghost { background: transparent; }
+.btn--block { width: 100%; }
+
+/* ---------- Vaihtoikkuna ---------- */
+
+.swap {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--ink);
+  padding: 0;
+  max-width: 460px; width: calc(100% - 2rem);
+}
+.swap::backdrop { background: rgb(0 0 0 / .65); }
+.swap__form { padding: var(--pad); display: grid; gap: .875rem; margin: 0; }
+.swap__title { font-size: 1.125rem; }
+.swap__lead { margin: 0; color: var(--ink-secondary); font-size: .875rem; }
+.swap__choices { display: grid; gap: .4rem; }
+
+.choice {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .55rem .7rem; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface-sunken);
+  cursor: pointer; font-size: .875rem; text-align: left;
+}
+.choice:hover { border-color: var(--line-strong); }
+.choice[aria-pressed="true"] { border-color: #7aa7ff; background: #1c2740; }
+.choice__role { font-size: .6875rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); }
+.choice__points { margin-left: auto; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+.choice:disabled { opacity: .4; cursor: not-allowed; }
+
+.swap__result {
+  margin: 0; padding: .6rem .75rem; border-radius: 8px;
+  background: #14251c; border: 1px solid #235437; font-size: .875rem;
+}
+.swap__pin { display: grid; gap: .3rem; font-size: .8125rem; color: var(--ink-secondary); }
+.swap__pin input {
+  font: inherit; font-size: 1rem; padding: .5rem .6rem;
+  background: var(--surface-sunken); color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: 8px;
+}
+.swap__error {
+  margin: 0; color: #ffb4b4; font-size: .875rem;
+  background: #2a1618; border: 1px solid #5a2b2f; border-radius: 8px; padding: .5rem .75rem;
+}
+.swap__actions { display: flex; gap: .5rem; justify-content: flex-end; }
+.swap__warn { margin: 0; font-size: .75rem; color: var(--ink-muted); }
+
+/* ---------- Sponsorit ---------- */
+
+.sponsors { display: grid; gap: .75rem; }
+.sponsors__title {
+  font-size: .75rem; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--ink-muted); font-weight: 600;
+}
+.sponsors__row {
+  display: grid; gap: var(--pad);
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+  align-items: start;
+}
+.sponsor {
+  display: block; border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--line); background: var(--surface-sunken);
+}
+.sponsor img { display: block; width: 100%; height: auto; }
+.sponsor:hover { border-color: var(--line-strong); }
+
+@media (max-width: 720px) {
+  .sponsors__row { grid-template-columns: 1fr; }
+  .sponsor--tall { max-width: 340px; }
+}
+
+/* ---------- Alatunniste ---------- */
+
+.foot {
+  max-width: 1180px; margin: 0 auto;
+  padding: 0 var(--pad) calc(var(--pad) * 2);
+  color: var(--ink-muted); font-size: .8125rem;
+  display: grid; gap: .25rem;
+}
+.foot p { margin: 0; }
+
+.notice {
+  margin: 0 0 1rem; padding: .6rem .8rem; border-radius: 8px;
+  background: #2a2312; border: 1px solid #5c4a1a; color: #f0d98a; font-size: .8125rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .series-line { transition: opacity .15s ease; }
+}

@@ -1,10 +1,10 @@
 {
-  "_comment": "Lähtökokoonpanot kuvakaappauksen mukaan. player_id täytetään liiga.fi:n pelaaja-ID:llä nimen ja seuran perusteella skriptillä scripts/resolve-players.ts. Tarkista nimet ennen käyttöönottoa.",
+  "_comment": "Lähtökokoonpanot. player_id on liiga.fi:n pelaaja-ID, selvitetty skriptillä scripts/resolve-players.mjs. Värit ovat bannerin paitavärit, hienosäädettynä läpäisemään värinäön saavutettavuustarkistukset.",
   "teams": [
     {
       "id": "apa",
       "name": "Apa",
-      "color": "#1a56db",
+      "color": "#2E6FE0",
       "sort_order": 1,
       "roster": [
         {
@@ -68,7 +68,7 @@
     {
       "id": "jarde",
       "name": "Jarde",
-      "color": "#e8500a",
+      "color": "#B98600",
       "sort_order": 2,
       "roster": [
         {
@@ -132,7 +132,7 @@
     {
       "id": "borje",
       "name": "Börje",
-      "color": "#0e9b62",
+      "color": "#E62E4D",
       "sort_order": 3,
       "roster": [
         {
@@ -196,7 +196,7 @@
     {
       "id": "niksu",
       "name": "Niksu",
-      "color": "#7a1fd0",
+      "color": "#00A878",
       "sort_order": 4,
       "roster": [
         {

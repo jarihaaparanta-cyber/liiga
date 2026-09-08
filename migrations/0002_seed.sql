@@ -1,10 +1,10 @@
 -- Muodostettu automaattisesti: node scripts/generate-seed.mjs
 -- Lähde: data/rosters.json
 
-INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('apa', 'Apa', '#1a56db', 1);
-INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('jarde', 'Jarde', '#e8500a', 2);
-INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('borje', 'Börje', '#0e9b62', 3);
-INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('niksu', 'Niksu', '#7a1fd0', 4);
+INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('apa', 'Apa', '#2E6FE0', 1);
+INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('jarde', 'Jarde', '#B98600', 2);
+INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('borje', 'Börje', '#E62E4D', 3);
+INSERT INTO fantasy_teams (id, name, color, sort_order) VALUES ('niksu', 'Niksu', '#00A878', 4);
 
 -- Apa
 INSERT INTO roster (team_id, player_id, position, is_starter, slot_order) VALUES ('apa', 40049925, 'F', 1, 1); -- Santeri Huovila (JYP)

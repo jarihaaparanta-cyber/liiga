@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stiga Pörssi</title>
+  <meta name="description" content="Kaveriporukan liigapörssi SM-liigan runkosarjaan.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🏒</text></svg>">
+</head>
+<body>
+  <a class="skip" href="#tilanne">Siirry sisältöön</a>
+
+  <header class="hero">
+    <img src="img/header.png" alt="Stiga Pörssi — neljä joukkuetta, yksi voittaja"
+         class="hero__image" width="2000" height="658">
+  </header>
+
+  <main>
+    <!-- Kärkitilanne isoina lukuina: tämä on se mitä sivulta ensimmäisenä katsotaan. -->
+    <section id="tilanne" class="panel" aria-labelledby="tilanne-otsikko">
+      <h2 id="tilanne-otsikko">Tilanne</h2>
+      <ol class="leaderboard" id="leaderboard"></ol>
+    </section>
+
+    <section class="panel" aria-labelledby="kuvaaja-otsikko">
+      <div class="panel__head">
+        <h2 id="kuvaaja-otsikko">Pistekertymä</h2>
+        <div class="toggle" role="group" aria-label="Esitystapa">
+          <button type="button" class="toggle__btn is-on" data-view="chart" aria-pressed="true">Kuvaaja</button>
+          <button type="button" class="toggle__btn" data-view="table" aria-pressed="false">Taulukko</button>
+        </div>
+      </div>
+      <figure class="chart" id="chart-figure">
+        <div class="chart__canvas" id="chart"></div>
+        <figcaption class="chart__caption">
+          Avauskokoonpanon yhteispisteet runkosarjan alusta. Vaihdettu pelaaja
+          lakkaa kerryttämästä pisteitä vaihtopäivästä alkaen.
+        </figcaption>
+      </figure>
+      <div class="chart-table" id="chart-table" hidden></div>
+    </section>
+
+    <section class="panel" aria-labelledby="joukkueet-otsikko">
+      <h2 id="joukkueet-otsikko">Joukkueet</h2>
+      <div class="teams" id="teams"></div>
+    </section>
+
+    <aside class="sponsors" aria-label="Pääsponsorit">
+      <h2 class="sponsors__title">Pääsponsorit</h2>
+      <div class="sponsors__row">
+        <a class="sponsor sponsor--wide" href="https://www.jersey53.fi" target="_blank" rel="noopener">
+          <img src="img/sponsor-jersey53.png" alt="Jersey53 — seuratekstiilit, fanituotteet, pelipaidat"
+               loading="lazy" width="1846" height="828">
+        </a>
+        <a class="sponsor sponsor--tall" href="https://www.ainto.fi" target="_blank" rel="noopener">
+          <img src="img/sponsor-ainto.png" alt="Ainto — digitaalisten palveluiden kumppani"
+               loading="lazy" width="1024" height="1536">
+        </a>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <p id="updated" class="foot__updated"></p>
+    <p class="foot__note">
+      Pisteet haetaan liiga.fi:n tilastoista joka ilta klo 21:30.
+      Vain runkosarja lasketaan.
+    </p>
+  </footer>
+
+  <!-- Vaihtoikkuna. Sisältö täytetään joukkueen mukaan. -->
+  <dialog class="swap" id="swap-dialog" aria-labelledby="swap-title">
+    <form method="dialog" class="swap__form" id="swap-form">
+      <h2 id="swap-title" class="swap__title"></h2>
+      <p class="swap__lead">Kenet vaihdat pois?</p>
+      <div class="swap__choices" id="swap-choices"></div>
+      <p class="swap__result" id="swap-result" hidden></p>
+      <label class="swap__pin">
+        <span>Joukkueen tunnusluku</span>
+        <input type="password" inputmode="numeric" autocomplete="off" id="swap-pin" maxlength="12">
+      </label>
+      <p class="swap__error" id="swap-error" role="alert" hidden></p>
+      <div class="swap__actions">
+        <button type="button" class="btn btn--ghost" id="swap-cancel">Peruuta</button>
+        <button type="button" class="btn btn--go" id="swap-confirm" disabled>Vahvista vaihto</button>
+      </div>
+      <p class="swap__warn">
+        Vaihdon voi tehdä vain kerran hyökkääjälle ja kerran pakille koko
+        runkosarjassa. Vahvistettua vaihtoa ei voi perua.
+      </p>
+    </form>
+  </dialog>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
