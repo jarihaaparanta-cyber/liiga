@@ -8,21 +8,24 @@
 const NBSP = ' ';
 
 /*
- * Joukkueen tunniste -> viivatyyli ja merkin muoto.
+ * Joukkueen tunniste -> pelaajan kasvot bannerista.
  *
- * Väri ei yksin riitä: Börjen punainen ja Niksun vihreä ovat punavihersokealle
- * lähes samat. Siksi jokaisella joukkueella on lisäksi oma viivakuvio, oma
- * merkin muoto ja nimi viivan päässä.
+ * Kasvot viivan kärjessä tunnistavat joukkueen ilman väriä, joten
+ * viivakuvioita ja erilaisia merkkimuotoja ei tarvita. Sama kuva toistuu
+ * selitteessä.
  */
-const ENCODING = {
-  apa:   { dash: '',            shape: 'circle'   },
-  jarde: { dash: '7 4',         shape: 'square'   },
-  borje: { dash: '2 4',         shape: 'triangle' },
-  niksu: { dash: '10 4 2 4',    shape: 'diamond'  },
+const HEADS = {
+  apa: 'img/head-apa.webp',
+  jarde: 'img/head-jarde.webp',
+  borje: 'img/head-borje.webp',
+  niksu: 'img/head-niksu.webp',
 };
 
 /** Vaaka-akselin merkintöjen määrä. */
 const TICK_COUNT = 4;
+
+/** Kasvokuvan säde kuvaajan koordinaatistossa. */
+const HEAD_R = 15;
 
 const state = { data: null, view: 'chart', swap: null };
 
@@ -146,7 +149,7 @@ function renderChart() {
 
   const W = 900;
   const H = 360;
-  const M = { top: 16, right: 104, bottom: 34, left: 44 };
+  const M = { top: 16, right: 128, bottom: 34, left: 44 };
   const plotW = W - M.left - M.right;
   const plotH = H - M.top - M.bottom;
 
@@ -176,9 +179,20 @@ function renderChart() {
     )
     .join('');
 
-  const series = teams
-    .map((team) => {
-      const enc = ENCODING[team.id] ?? { dash: '', shape: 'circle' };
+  // Kärkimerkinnät sijoitetaan ensin oikeille korkeuksilleen ja siirretään
+  // sitten erilleen, jottei tasapisteissä oleva kasvokuva peitä toista.
+  const ends = layoutEndLabels(
+    teams.map((team) => {
+      const last = team.series[team.series.length - 1];
+      return { team, points: last.points, valueY: y(last.points) };
+    }),
+    M.top + HEAD_R,
+    M.top + plotH - HEAD_R,
+  );
+
+  const headX = M.left + plotW + HEAD_R + 6;
+  const series = ends
+    .map(({ team, points, valueY, labelY }) => {
       // Porrasviiva: pistesaldo pysyy samana ottelupäivien välillä ja
       // nousee vasta ottelupäivänä. Suora viiva valehtelisi välipäivistä.
       let d = '';
@@ -191,19 +205,25 @@ function renderChart() {
           d += ` L${px} ${y(team.series[index - 1].points)} L${px} ${py}`;
         }
       });
-      const last = team.series[team.series.length - 1];
-      d += ` L${M.left + plotW} ${y(last.points)}`;
+      d += ` L${M.left + plotW} ${valueY}`;
 
       const dots = team.series
         .slice(1)
-        .map((point) => marker(enc.shape, x(point.date), y(point.points), team.color))
+        .map(
+          (point) =>
+            `<circle class="series-dot" cx="${x(point.date)}" cy="${y(point.points)}" r="3.5" ` +
+            `fill="${escapeAttr(team.color)}"/>`,
+        )
         .join('');
 
       return (
-        `<path class="series-line" d="${d}" stroke="${escapeAttr(team.color)}" ` +
-        `stroke-dasharray="${enc.dash}"/>${dots}` +
-        `<text class="series-label" x="${M.left + plotW + 8}" y="${y(last.points) + 4}" ` +
-        `fill="${escapeAttr(team.color)}">${escapeHtml(team.name)} ${last.points}</text>`
+        `<path class="series-line" d="${d}" stroke="${escapeAttr(team.color)}"/>${dots}` +
+        // Ohut yhdysviiva viivan päästä kasvokuvaan, kun merkintää on jouduttu siirtämään.
+        `<path class="series-leader" d="M${M.left + plotW} ${valueY} L${headX - HEAD_R} ${labelY}" ` +
+        `stroke="${escapeAttr(team.color)}"/>` +
+        headBadge(team, headX, labelY) +
+        `<text class="series-label" x="${headX + HEAD_R + 6}" y="${labelY + 4}" ` +
+        `fill="${escapeAttr(team.color)}">${escapeHtml(team.name)} ${points}</text>`
       );
     })
     .join('');
@@ -223,38 +243,58 @@ function renderChart() {
 
 function renderLegend(teams) {
   const items = teams
-    .map((team) => {
-      const enc = ENCODING[team.id] ?? { dash: '', shape: 'circle' };
-      return `<li>
-        <svg width="34" height="12" aria-hidden="true">
-          <line x1="1" y1="6" x2="33" y2="6" stroke="${escapeAttr(team.color)}"
-                stroke-width="2" stroke-dasharray="${enc.dash}"/>
-          ${marker(enc.shape, 17, 6, team.color)}
-        </svg>
+    .map(
+      (team) => `<li>
+        <span class="legend-head" style="--team:${escapeAttr(team.color)}">
+          <img src="${escapeAttr(HEADS[team.id] ?? '')}" alt="" width="22" height="22">
+        </span>
         <span>${escapeHtml(team.name)}</span>
-      </li>`;
-    })
+      </li>`,
+    )
     .join('');
   return `<ul class="legend">${items}</ul>`;
 }
 
-/** Merkin muoto koodaa joukkueen myös ilman väriä. */
-function marker(shape, cx, cy, color) {
-  const fill = escapeAttr(color);
-  const r = 4;
-  if (shape === 'square') {
-    return `<rect class="series-dot" x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" fill="${fill}"/>`;
+/** Pyöreäksi rajattu kasvokuva joukkueen värisellä kehyksellä. */
+function headBadge(team, cx, cy) {
+  const src = HEADS[team.id];
+  if (!src) {
+    return `<circle cx="${cx}" cy="${cy}" r="${HEAD_R}" fill="${escapeAttr(team.color)}"/>`;
   }
-  if (shape === 'triangle') {
-    const pts = `${cx},${cy - r - 1} ${cx + r + 1},${cy + r} ${cx - r - 1},${cy + r}`;
-    return `<polygon class="series-dot" points="${pts}" fill="${fill}"/>`;
+  const id = `head-${escapeAttr(team.id)}`;
+  return (
+    `<defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${HEAD_R}"/></clipPath></defs>` +
+    `<image href="${escapeAttr(src)}" x="${cx - HEAD_R}" y="${cy - HEAD_R}" ` +
+    `width="${HEAD_R * 2}" height="${HEAD_R * 2}" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="${HEAD_R}" fill="none" ` +
+    `stroke="${escapeAttr(team.color)}" stroke-width="2.5"/>`
+  );
+}
+
+/**
+ * Siirtää kärkimerkinnät erilleen niin etteivät kasvokuvat mene päällekkäin.
+ *
+ * Merkinnät järjestetään ylhäältä alas, työnnetään alaspäin kunnes väli
+ * riittää, ja lopuksi koko rypäs nostetaan takaisin alueen sisään jos se
+ * valui alareunan yli.
+ */
+function layoutEndLabels(entries, minY, maxY) {
+  const gap = HEAD_R * 2 + 4;
+  const sorted = [...entries].sort((a, b) => a.valueY - b.valueY);
+
+  let previous = -Infinity;
+  for (const entry of sorted) {
+    entry.labelY = Math.max(entry.valueY, previous + gap, minY);
+    previous = entry.labelY;
   }
-  if (shape === 'diamond') {
-    const d = r + 1;
-    const pts = `${cx},${cy - d} ${cx + d},${cy} ${cx},${cy + d} ${cx - d},${cy}`;
-    return `<polygon class="series-dot" points="${pts}" fill="${fill}"/>`;
+
+  const overflow = previous - maxY;
+  if (overflow > 0) {
+    // Nosta ylöspäin, mutta älä työnnä ylimmäistä alueen ulkopuolelle.
+    const shift = Math.min(overflow, sorted[0].labelY - minY);
+    for (const entry of sorted) entry.labelY -= shift;
   }
-  return `<circle class="series-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+  return sorted;
 }
 
 function wireHover(host, geo) {

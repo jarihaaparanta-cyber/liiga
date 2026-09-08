@@ -13,6 +13,7 @@ lopputuloksen koon.
 | Tiedosto | Sisältö | Tila |
 | --- | --- | --- |
 | `header.webp` | Stiga Pörssi -banneri | valmis |
+| `head-*.webp` | Pelaajien kasvot kuvaajan kärkeen | valmis |
 | `sponsor-jersey53.webp` | Jersey53-banneri | valmis |
 | `sponsor-ainto.webp` | Ainto-banneri | valmis |
 
@@ -24,3 +25,7 @@ tässä koossa lukukelvoton.
 Nimet on kiinnitetty koodiin, joten oikea tiedosto vain korvaa paikkamerkin.
 Kunnes tiedosto on lisätty, sivu näyttää sen paikalla katkoviivaisen
 paikkamerkin eikä rikkinäistä kuvaa.
+
+Kasvokuvat on rajattu bannerista neliöiksi ja näytetään pyöreinä. Jos banneri
+vaihtuu, rajaukset on haettava uudelleen: koordinaatit ovat commit-historiassa
+ja ne kannattaa tarkistaa silmämääräisesti ennen käyttöä.

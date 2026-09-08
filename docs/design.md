@@ -17,21 +17,25 @@ Paletti on tarkistettu koneellisesti kaikkien parien osalta tummaa taustaa
 vasten: kirkkausvyöhyke, värikylläisyys, normaalin värinäön erottuvuus ja
 kontrasti läpäisevät.
 
-## Miksi kuvaajassa on viivatyylit ja merkkien muodot
+## Miksi kuvaajan kärjessä on kasvokuva
 
 Punainen ja vihreä ovat punavihersokealle lähes samat: paras saavutettu
 erottuvuus Börjen ja Niksun välillä on ΔE 6,3, kun tavoite on 8. Tätä ei saa
 paremmaksi ilman että luovutaan paitojen väreistä.
 
-Siksi väri ei ole ainoa tunniste. Jokaisella joukkueella on kolme muutakin:
+Siksi väri ei ole ainoa tunniste. Jokaisen käyrän kärjessä on bannerista
+rajattu kasvokuva joukkueen värisessä kehyksessä, ja sen vieressä joukkueen
+nimi ja pistemäärä. Sama kasvokuva toistuu selitteessä. Kuvaajan saa myös
+vaihdettua taulukkonäkymäksi.
 
-1. **Viivakuvio** — yhtenäinen, katkoviiva, pisteviiva, viiva-piste
-2. **Merkin muoto** — ympyrä, neliö, kolmio, vinoneliö
-3. **Nimi viivan päässä** — joukkueen nimi ja pistemäärä suoraan käyrän kärjessä
+Kasvot ovat vahvempi tunniste kuin aiemmat viivakuviot ja merkkien muodot,
+koska ne tunnistaa yhdellä silmäyksellä eikä niitä tarvitse verrata
+selitteeseen. Siksi viivat ovat nyt yhtenäisiä ja kaikki datapisteet
+samanmuotoisia.
 
-Lisäksi selite käyttää samoja kuvioita ja muotoja, ja koko kuvaajan saa
-vaihdettua taulukkonäkymäksi. Kuka tahansa pystyy siis lukemaan kuvaajan
-ilman värinäköä.
+Kärkimerkinnät siirretään tarvittaessa pystysuunnassa erilleen, jotta
+tasapisteissä olevien joukkueiden kasvot eivät mene päällekkäin. Ohut
+yhdysviiva kertoo mihin kohtaan käyrä oikeasti päättyy.
 
 ## Porrasviiva, ei suora
 

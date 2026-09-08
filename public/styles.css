@@ -62,9 +62,10 @@ h1, h2, h3 { line-height: 1.2; margin: 0; }
   display: block;
   width: 100%;
   height: auto;
-  max-height: 46vh;
+  max-height: min(460px, 60vh);
   object-fit: cover;
-  object-position: center 40%;
+  /* Rajaus alareunasta: logo ja kasvot säilyvät kokonaan, jäätä jää pois. */
+  object-position: center top;
 }
 
 /* Jos kuvatiedostoa ei ole vielä lisätty, näytetään sen tilalla
@@ -166,6 +167,7 @@ main > * { min-width: 0; }
 .axis-text { fill: var(--ink-muted); font-size: 12px; }
 .series-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .series-dot { stroke: var(--surface-raised); stroke-width: 2; }
+.series-leader { fill: none; stroke-width: 1; stroke-opacity: .55; }
 .series-label { font-size: 12px; font-weight: 650; }
 .crosshair { stroke: var(--line-strong); stroke-width: 1; }
 
@@ -184,6 +186,15 @@ main > * { min-width: 0; }
 }
 .legend li { display: flex; align-items: center; gap: .45rem; }
 .legend svg { flex: none; }
+
+/* Selitteen kasvokuva samalla kehyksellä kuin kuvaajan kärjessä. */
+.legend-head {
+  flex: none; display: block;
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--team);
+  overflow: hidden; background: var(--surface-sunken);
+}
+.legend-head img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* Vihjelaatikko kuvaajan päällä. */
 .tip {
