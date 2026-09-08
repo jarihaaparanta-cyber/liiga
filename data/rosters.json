@@ -7,13 +7,62 @@
       "color": "#1a56db",
       "sort_order": 1,
       "roster": [
-        { "position": "F", "starter": true,  "name": "Santeri Huovila",   "club": "JYP" },
-        { "position": "F", "starter": true,  "name": "Lukas Wernblom",    "club": "TPS" },
-        { "position": "F", "starter": true,  "name": "Brendan Ranford",   "club": "HPK" },
-        { "position": "D", "starter": true,  "name": "Jyrki Jokipakka",   "club": "Tappara" },
-        { "position": "D", "starter": true,  "name": "Alexis Binner",     "club": "TPS" },
-        { "position": "F", "starter": false, "name": "Alexander Forslund","club": "Jokerit" },
-        { "position": "D", "starter": false, "name": "Chad Nychuk",       "club": "HPK" }
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Santeri Huovila",
+          "club": "JYP",
+          "player_id": 40049925,
+          "official_name": "Santeri Huovila"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Lukas Wernblom",
+          "club": "TPS",
+          "player_id": 60799830,
+          "official_name": "Lukas Wernblom"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Brendan Ranford",
+          "club": "HPK",
+          "player_id": 61073597,
+          "official_name": "Brendan Ranford"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Jyrki Jokipakka",
+          "club": "Tappara",
+          "player_id": 24501132,
+          "official_name": "Jyrki Jokipakka"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Alexis Binner",
+          "club": "TPS",
+          "player_id": 61029234,
+          "official_name": "Alexis Binner"
+        },
+        {
+          "position": "F",
+          "starter": false,
+          "name": "Alexander Forslund",
+          "club": "Jokerit",
+          "player_id": 31275998,
+          "official_name": "Alexander Forslund"
+        },
+        {
+          "position": "D",
+          "starter": false,
+          "name": "Chad Nychuk",
+          "club": "HPK",
+          "player_id": 61073595,
+          "official_name": "Chad Nychuk"
+        }
       ]
     },
     {
@@ -22,13 +71,62 @@
       "color": "#e8500a",
       "sort_order": 2,
       "roster": [
-        { "position": "F", "starter": true,  "name": "Maxime Fortier",    "club": "Jokerit" },
-        { "position": "F", "starter": true,  "name": "Harri Pesonen",     "club": "JYP" },
-        { "position": "F", "starter": true,  "name": "Henri Nikkanen",    "club": "Jokerit" },
-        { "position": "D", "starter": true,  "name": "Simon Åkerström",   "club": "Sport" },
-        { "position": "D", "starter": true,  "name": "Santeri Airola",    "club": "SaiPa" },
-        { "position": "F", "starter": false, "name": "Mikael Ruohomaa",   "club": "Lukko" },
-        { "position": "D", "starter": false, "name": "Kristian Näkyvä",   "club": "K-Espoo" }
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Maxime Fortier",
+          "club": "Jokerit",
+          "player_id": 60954325,
+          "official_name": "Maxime Fortier"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Harri Pesonen",
+          "club": "JYP",
+          "player_id": 22870292,
+          "official_name": "Harri Pesonen"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Henri Nikkanen",
+          "club": "Jokerit",
+          "player_id": 30712591,
+          "official_name": "Henri Nikkanen"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Simon Åkerström",
+          "club": "Sport",
+          "player_id": 60351425,
+          "official_name": "Simon Åkerström"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Santeri Airola",
+          "club": "SaiPa",
+          "player_id": 40005621,
+          "official_name": "Santeri Airola"
+        },
+        {
+          "position": "F",
+          "starter": false,
+          "name": "Mikael Ruohomaa",
+          "club": "Lukko",
+          "player_id": 25126574,
+          "official_name": "Mikael Ruohomaa"
+        },
+        {
+          "position": "D",
+          "starter": false,
+          "name": "Kristian Näkyvä",
+          "club": "K-Espoo",
+          "player_id": 22768061,
+          "official_name": "Kristian Näkyvä"
+        }
       ]
     },
     {
@@ -37,13 +135,62 @@
       "color": "#0e9b62",
       "sort_order": 3,
       "roster": [
-        { "position": "F", "starter": true,  "name": "Benjamin Rautiainen","club": "Tappara" },
-        { "position": "F", "starter": true,  "name": "Jere Lassila",       "club": "JYP" },
-        { "position": "F", "starter": true,  "name": "Roni Hirvonen",      "club": "Kärpät" },
-        { "position": "D", "starter": true,  "name": "Sami Vatanen",       "club": "JYP" },
-        { "position": "D", "starter": true,  "name": "Matt Caito",         "club": "Jokerit" },
-        { "position": "F", "starter": false, "name": "Michael Lindqvist",  "club": "Tappara" },
-        { "position": "D", "starter": false, "name": "Juuso Arola",        "club": "JYP" }
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Benjamin Rautiainen",
+          "club": "Tappara",
+          "player_id": 33490124,
+          "official_name": "Benjamin Rautiainen"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Jere Lassila",
+          "club": "JYP",
+          "player_id": 33209030,
+          "official_name": "Jere Lassila"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Roni Hirvonen",
+          "club": "Kärpät",
+          "player_id": 32269686,
+          "official_name": "Roni Hirvonen"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Sami Vatanen",
+          "club": "JYP",
+          "player_id": 23595916,
+          "official_name": "Sami Vatanen"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Matt Caito",
+          "club": "Jokerit",
+          "player_id": 60342512,
+          "official_name": "Matthew Caito"
+        },
+        {
+          "position": "F",
+          "starter": false,
+          "name": "Michael Lindqvist",
+          "club": "Tappara",
+          "player_id": 61081809,
+          "official_name": "Michael Lindqvist"
+        },
+        {
+          "position": "D",
+          "starter": false,
+          "name": "Juuso Arola",
+          "club": "JYP",
+          "player_id": 28897266,
+          "official_name": "Juuso Arola"
+        }
       ]
     },
     {
@@ -52,13 +199,62 @@
       "color": "#7a1fd0",
       "sort_order": 4,
       "roster": [
-        { "position": "F", "starter": true,  "name": "Joachim Blichfeld",  "club": "Tappara" },
-        { "position": "F", "starter": true,  "name": "Lukas Jasek",        "club": "Ilves" },
-        { "position": "F", "starter": true,  "name": "Teemu Turunen",      "club": "Jokerit" },
-        { "position": "D", "starter": true,  "name": "Jakob Stenqvist",    "club": "Lukko" },
-        { "position": "D", "starter": true,  "name": "Jiri Ticháček",      "club": "Kärpät" },
-        { "position": "F", "starter": false, "name": "Leevi Tukiainen",    "club": "JYP" },
-        { "position": "D", "starter": false, "name": "Ville Ruotsalainen", "club": "KalPa" }
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Joachim Blichfeld",
+          "club": "Tappara",
+          "player_id": 60963285,
+          "official_name": "Joachim Blichfeld"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Lukas Jasek",
+          "club": "Ilves",
+          "player_id": 60544772,
+          "official_name": "Lukas Jasek"
+        },
+        {
+          "position": "F",
+          "starter": true,
+          "name": "Teemu Turunen",
+          "club": "Jokerit",
+          "player_id": 25506929,
+          "official_name": "Teemu Turunen"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Jakob Stenqvist",
+          "club": "Lukko",
+          "player_id": 60351426,
+          "official_name": "Jakob Stenqvist"
+        },
+        {
+          "position": "D",
+          "starter": true,
+          "name": "Jiri Ticháček",
+          "club": "Kärpät",
+          "player_id": 60952399,
+          "official_name": "Jiri Tichacek"
+        },
+        {
+          "position": "F",
+          "starter": false,
+          "name": "Leevi Tukiainen",
+          "club": "JYP",
+          "player_id": 30010552,
+          "official_name": "Leevi Tukiainen"
+        },
+        {
+          "position": "D",
+          "starter": false,
+          "name": "Ville Ruotsalainen",
+          "club": "KalPa",
+          "player_id": 40215681,
+          "official_name": "Ville Ruotsalainen"
+        }
       ]
     }
   ]

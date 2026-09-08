@@ -1,0 +1,301 @@
+[
+  {
+    "id": 2701274,
+    "season": 2027,
+    "start": "2026-09-01T15:30:00Z",
+    "ended": true,
+    "started": true,
+    "serie": "RUNKOSARJA",
+    "finishedType": "ENDED_DURING_REGULAR_GAME_TIME",
+    "homeTeam": {
+      "teamId": "292293444:jukurit",
+      "teamName": "Jukurit",
+      "goals": 1,
+      "goalEvents": [
+        {
+          "scorerPlayerId": 60860218,
+          "assistantPlayerIds": [
+            60898910,
+            60456415
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 2,
+          "gameTime": 1271
+        }
+      ]
+    },
+    "awayTeam": {
+      "teamId": "55786244:hpk",
+      "teamName": "HPK",
+      "goals": 4,
+      "goalEvents": [
+        {
+          "scorerPlayerId": 61073595,
+          "assistantPlayerIds": [
+            61073597,
+            33296946
+          ],
+          "goalTypes": [
+            "YV"
+          ],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 344
+        },
+        {
+          "scorerPlayerId": 33296946,
+          "assistantPlayerIds": [
+            34081477,
+            21499603
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 2,
+          "gameTime": 1712
+        },
+        {
+          "scorerPlayerId": 33296946,
+          "assistantPlayerIds": [
+            61073597,
+            61073595
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 2,
+          "period": 3,
+          "gameTime": 2605
+        },
+        {
+          "scorerPlayerId": 33296946,
+          "assistantPlayerIds": [
+            61073597,
+            31585390
+          ],
+          "goalTypes": [
+            "TM"
+          ],
+          "goalsSoFarInSeason": 3,
+          "period": 3,
+          "gameTime": 3570
+        }
+      ]
+    }
+  },
+  {
+    "id": 2701280,
+    "season": 2027,
+    "start": "2026-09-01T15:30:00Z",
+    "ended": true,
+    "started": true,
+    "serie": "RUNKOSARJA",
+    "finishedType": "ENDED_DURING_WINNING_SHOT_COMPETITION",
+    "homeTeam": {
+      "teamId": "626537494:sport",
+      "teamName": "Sport",
+      "goals": 5,
+      "goalEvents": [
+        {
+          "scorerPlayerId": 61073932,
+          "assistantPlayerIds": [],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 279
+        },
+        {
+          "scorerPlayerId": 60744050,
+          "assistantPlayerIds": [
+            60662386,
+            31539993
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 299
+        },
+        {
+          "scorerPlayerId": 61073932,
+          "assistantPlayerIds": [
+            61073933,
+            61073929
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 2,
+          "period": 2,
+          "gameTime": 2014
+        },
+        {
+          "scorerPlayerId": 31896306,
+          "assistantPlayerIds": [
+            60351425
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 3,
+          "gameTime": 3012
+        },
+        {
+          "scorerPlayerId": 61073932,
+          "assistantPlayerIds": [],
+          "goalTypes": [
+            "VL"
+          ],
+          "goalsSoFarInSeason": 0,
+          "period": 5,
+          "gameTime": 3900
+        }
+      ]
+    },
+    "awayTeam": {
+      "teamId": "238306801:jokerit",
+      "teamName": "Jokerit",
+      "goals": 4,
+      "goalEvents": [
+        {
+          "scorerPlayerId": 25489224,
+          "assistantPlayerIds": [
+            25506929,
+            34323261
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 215
+        },
+        {
+          "scorerPlayerId": 33706012,
+          "assistantPlayerIds": [
+            21403877,
+            34323261
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 742
+        },
+        {
+          "scorerPlayerId": 34323261,
+          "assistantPlayerIds": [
+            40217713
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 2,
+          "gameTime": 1509
+        },
+        {
+          "scorerPlayerId": 30712591,
+          "assistantPlayerIds": [
+            60954325,
+            60866735
+          ],
+          "goalTypes": [
+            "YV"
+          ],
+          "goalsSoFarInSeason": 1,
+          "period": 2,
+          "gameTime": 2166
+        }
+      ]
+    }
+  },
+  {
+    "id": 2701286,
+    "season": 2027,
+    "start": "2026-09-05T14:00:00Z",
+    "ended": true,
+    "started": true,
+    "serie": "RUNKOSARJA",
+    "finishedType": "ENDED_DURING_REGULAR_GAME_TIME",
+    "homeTeam": {
+      "teamId": "292293444:jukurit",
+      "teamName": "Jukurit",
+      "goals": 4,
+      "goalEvents": [
+        {
+          "scorerPlayerId": 60456415,
+          "assistantPlayerIds": [],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 226
+        },
+        {
+          "scorerPlayerId": 40006279,
+          "assistantPlayerIds": [
+            33549965,
+            60960736
+          ],
+          "goalTypes": [],
+          "goalsSoFarInSeason": 1,
+          "period": 1,
+          "gameTime": 817
+        },
+        {
+          "scorerPlayerId": 61073535,
+          "assistantPlayerIds": [
+            60898910,
+            61026835
+          ],
+          "goalTypes": [
+            "YV"
+          ],
+          "goalsSoFarInSeason": 1,
+          "period": 3,
+          "gameTime": 2560
+        },
+        {
+          "scorerPlayerId": 61026835,
+          "assistantPlayerIds": [
+            60860218,
+            60898910
+          ],
+          "goalTypes": [
+            "TM"
+          ],
+          "goalsSoFarInSeason": 1,
+          "period": 3,
+          "gameTime": 3542
+        }
+      ]
+    },
+    "awayTeam": {
+      "teamId": "626537494:sport",
+      "teamName": "Sport",
+      "goals": 0,
+      "goalEvents": [
+        {
+          "scorerPlayerId": 61073932,
+          "assistantPlayerIds": [],
+          "goalTypes": [
+            "RL0"
+          ],
+          "goalsSoFarInSeason": 0,
+          "period": 1,
+          "gameTime": 646
+        }
+      ]
+    }
+  },
+  {
+    "id": 2701291,
+    "season": 2027,
+    "start": "2026-09-08T15:30:00Z",
+    "ended": false,
+    "started": false,
+    "serie": "RUNKOSARJA",
+    "finishedType": "ACTIVE_OR_NOT_STARTED",
+    "homeTeam": {
+      "teamId": "55786244:hpk",
+      "teamName": "HPK",
+      "goals": 0,
+      "goalEvents": []
+    },
+    "awayTeam": {
+      "teamId": "951626834:ilves",
+      "teamName": "Ilves",
+      "goals": 0,
+      "goalEvents": []
+    }
+  }
+]

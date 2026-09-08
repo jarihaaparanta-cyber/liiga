@@ -91,21 +91,21 @@ describe('tallyTeam', () => {
     expect(inn.active).toBe(true);
   });
 
-  it('laskee otteluiden määrän vain kokoonpanossa vietetyltä ajalta', () => {
+  it('laskee pisteottelut vain kokoonpanossa vietetyltä ajalta', () => {
     const swaps: Swap[] = [
       { position: 'D', outPlayerId: 4, inPlayerId: 7, effectiveDate: '2026-10-15' },
     ];
     const stats = [
-      stat(4, '2026-10-13', 0, 0),
-      stat(4, '2026-10-14', 0, 0),
-      stat(4, '2026-10-16', 0, 0),
+      stat(4, '2026-10-13', 1, 0),
+      stat(4, '2026-10-14', 0, 1),
+      stat(4, '2026-10-16', 1, 0),
     ];
     const team = tallyTeam('apa', roster, swaps, stats, SEASON_START);
     const out = team.players.find((p) => p.playerId === 4)!;
 
-    expect(out.counted.games).toBe(2);
-    expect(out.bench.games).toBe(1);
-    expect(out.season.games).toBe(3);
+    expect(out.counted.scoringGames).toBe(2);
+    expect(out.bench.scoringGames).toBe(1);
+    expect(out.season.scoringGames).toBe(3);
   });
 
   it('kertoo montako vaihtoa on jäljellä', () => {
@@ -134,7 +134,7 @@ describe('cumulativeSeries', () => {
       stat(6, '2026-10-20', 0, 2),
     ];
     expect(cumulativeSeries(roster, swaps, stats, SEASON_START)).toEqual([
-      { date: SEASON_START, points: 0 },
+      { date: '2026-08-31', points: 0 },
       { date: '2026-09-10', points: 1 },
       { date: '2026-10-20', points: 3 },
     ]);

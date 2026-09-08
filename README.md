@@ -54,3 +54,27 @@ npm test
 | `migrations/` | D1-skeema. |
 | `data/rosters.json` | Kauden lähtökokoonpanot. |
 | `public/` | Selainkäyttöliittymä. |
+
+## Tunnusluvut
+
+Vaihdon tekeminen vaatii joukkueen tunnusluvun. Se asetetaan kerran:
+
+```bash
+node scripts/set-pin.mjs apa 1234
+npx wrangler d1 execute liigaporssi --remote --command "<tulostettu lause>"
+```
+
+Tietokantaan tallentuu vain tiiviste. Jos tunnuslukua ei ole asetettu,
+joukkueen vaihto on estetty.
+
+## Ensimmäinen datan lataus
+
+Kauden alussa tai tietokannan tyhjennyksen jälkeen koko runkosarja haetaan
+kerralla:
+
+```bash
+npx wrangler secret put ADMIN_TOKEN
+curl -X POST "https://<osoite>/api/sync?kind=backfill" -H "Authorization: Bearer <token>"
+```
+
+Sen jälkeen cron hoitaa päivitykset automaattisesti.

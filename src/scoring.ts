@@ -13,6 +13,8 @@
  *  - Vain runkosarja lasketaan; pudotuspelit jätetään datan ulkopuolelle.
  */
 
+import { addDays } from './time';
+
 export type Position = 'F' | 'D';
 
 export interface RosterEntry {
@@ -62,7 +64,12 @@ export interface PlayerTally {
 }
 
 export interface StatLine {
-  games: number;
+  /**
+   * Ottelut joissa pelaaja sai pisteitä. EI sama kuin pelatut ottelut:
+   * rajapinta ei kerro kokoonpanoja, joten pisteetön ottelu ei näy tässä.
+   * Varsinainen otteluiden määrä lasketaan player_daily-tilannekuvista.
+   */
+  scoringGames: number;
   goals: number;
   assists: number;
   points: number;
@@ -79,7 +86,7 @@ export interface TeamTally {
   swapsLeft: { F: number; D: number };
 }
 
-const EMPTY: StatLine = { games: 0, goals: 0, assists: 0, points: 0 };
+const EMPTY: StatLine = { scoringGames: 0, goals: 0, assists: 0, points: 0 };
 
 /**
  * Laskee milloin pelaaja on ollut pisteitä kerryttävässä kokoonpanossa.
@@ -110,7 +117,7 @@ function inIntervals(date: string, intervals: Interval[]): boolean {
 }
 
 function accumulate(target: StatLine, stat: GameStat): void {
-  target.games += 1;
+  target.scoringGames += 1;
   target.goals += stat.goals;
   target.assists += stat.assists;
   target.points += stat.goals + stat.assists;
@@ -208,7 +215,11 @@ export function cumulativeSeries(
     perDay.set(stat.gameDate, (perDay.get(stat.gameDate) ?? 0) + pts);
   }
 
-  const series: { date: string; points: number }[] = [{ date: seasonStart, points: 0 }];
+  // Nollapiste ankkuroidaan kauden alkua edeltävään päivään, jottei
+  // avauspäivänä tule kahta pistettä samalle päivämäärälle.
+  const series: { date: string; points: number }[] = [
+    { date: addDays(seasonStart, -1), points: 0 },
+  ];
   let running = 0;
   for (const date of [...perDay.keys()].sort()) {
     running += perDay.get(date)!;

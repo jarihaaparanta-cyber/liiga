@@ -15,9 +15,10 @@ CREATE TABLE players (
   updated_at    TEXT NOT NULL
 );
 
--- Yksi rivi per pelaaja per ottelu, myös silloin kun pelaaja pelasi
--- pisteittä (goals = 0, assists = 0). Nollarivit tarvitaan, jotta
--- otteluiden lukumäärä (O-sarake) voidaan laskea aikavälille.
+-- Yksi rivi per pelaaja per ottelu, jossa pelaaja sai pisteitä. Rajapinta
+-- kertoo maalitapahtumat mutta ei kokoonpanoja, joten pisteettömistä
+-- otteluista ei synny riviä; otteluiden lukumäärä lasketaan alla olevasta
+-- player_daily-taulusta.
 CREATE TABLE player_game_stats (
   player_id   INTEGER NOT NULL,
   game_id     INTEGER NOT NULL,
@@ -41,6 +42,23 @@ CREATE TABLE games (
   synced_at   TEXT
 );
 CREATE INDEX idx_games_date ON games (game_date);
+
+-- Päivittäinen tilannekuva pelaajien virallisista kausisummista.
+--
+-- Kaksi käyttötarkoitusta. Ensinnäkin otteluiden lukumäärä aikavälille:
+-- rajapinta ei kerro ottelukohtaisia kokoonpanoja, mutta kahden päivän
+-- games-lukemien erotus kertoo montako ottelua pelaaja pelasi välissä.
+-- Toiseksi laskennan tarkistus: jos maalitapahtumista lasketut pisteet
+-- eroavat virallisista, jokin on mennyt pieleen ja se halutaan tietää.
+CREATE TABLE player_daily (
+  player_id   INTEGER NOT NULL,
+  date        TEXT    NOT NULL,       -- Suomen kalenteripäivä, illan otteluiden jälkeen
+  games       INTEGER NOT NULL,
+  goals       INTEGER NOT NULL,
+  assists     INTEGER NOT NULL,
+  PRIMARY KEY (player_id, date)
+);
+CREATE INDEX idx_player_daily_date ON player_daily (date);
 
 -- Liigapörssin joukkueet eli kaverit.
 CREATE TABLE fantasy_teams (
