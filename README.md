@@ -64,7 +64,17 @@ pisteet. Osoite näkyy ajon yhteenvedossa.
 Tämän jälkeen jokainen branchiin tuleva muutos julkaistaan automaattisesti.
 
 **5. Aseta tunnusluvut.** *Actions → Aseta tunnusluku → Run workflow*, kerran
-jokaiselle joukkueelle. Ilman tunnuslukua joukkueen vaihto on estetty.
+jokaiselle joukkueelle. Ilman tunnuslukua joukkueen vaihto on estetty, ja
+kortin nappi kertoo sen.
+
+## Vaihdon peruminen
+
+Pelaaja ei voi perua vaihtoa sivustolta — se on sääntö. Ylläpitäjälle on
+korjauskeino väärinklikkauksia ja testaamista varten:
+*Actions → Peru vaihto → Run workflow*.
+
+Pisteet lasketaan aina vaihtohistoriasta uudelleen, joten rivin poisto
+palauttaa tilanteen täsmälleen ennalleen eikä mitään häviä.
 
 ## Käyttöönotto päätteeltä
 
