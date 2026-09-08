@@ -56,16 +56,32 @@ h1, h2, h3 { line-height: 1.2; margin: 0; }
 
 /* ---------- Banneri ---------- */
 
-.hero { background: var(--surface-sunken); }
+.hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
 
+/* Sumennettu suurennos samasta kuvasta. Skaalaus peittää sumennuksen
+   läpikuultavat reunat, tummennus pitää bannerin itsensä pääosassa. */
+.hero__backdrop {
+  position: absolute;
+  inset: 0;
+  background: url('img/header.webp') center / cover no-repeat;
+  filter: blur(30px) brightness(0.4) saturate(0.7);
+  transform: scale(1.2);
+}
+
+/* Koko banneri näkyviin: korkeus rajataan, leveys seuraa kuvasuhdetta. */
 .hero__image {
+  position: relative;
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
-  max-height: min(400px, 44vh);
-  object-fit: cover;
-  /* Rajaus alareunasta: logo ja kasvot säilyvät kokonaan, jäätä jää pois. */
-  object-position: center top;
+  max-width: 100%;
+  max-height: min(420px, 46vh);
 }
 
 /* Jos kuvatiedostoa ei ole vielä lisätty, näytetään sen tilalla

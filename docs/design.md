@@ -48,6 +48,19 @@ Ottelupäivien kohdalla on merkkipiste, joten todelliset havainnot erottuvat
 interpoloidusta välistä. Viimeisestä ottelupäivästä oikeaan reunaan viiva
 jatkuu vaakasuorana, koska uusia pisteitä ei ole tullut.
 
+## Banneri näkyy kokonaan
+
+Banneri on 2:1, eli täysleveänä se veisi työpöydällä yli puolet ruudusta.
+Rajaaminen taas pudotti kuvasta osia pois. Ratkaisu on kolmas: kuvan korkeus
+rajataan ja leveys seuraa kuvasuhdetta, jolloin koko banneri näkyy mutta
+sivuille jää tilaa.
+
+Tyhjät sivut täytetään samasta kuvasta tehdyllä sumennetulla suurennoksella,
+jolloin reunoille ei jää irrallisen näköistä palkkia. Tiedosto on sama, joten
+ylimääräistä latausta ei synny.
+
+Puhelimessa kuva täyttää leveyden kokonaan eikä sivuja synny lainkaan.
+
 ## Kuvaaja piirretään säiliön leveydelle
 
 Kuvaajalla oli kiinteä 900 yksikön viewBox ja 520 pikselin vähimmäisleveys,
