@@ -24,9 +24,6 @@ const HEADS = {
 /** Vaaka-akselin merkintöjen määrä. */
 const TICK_COUNT = 4;
 
-/** Kasvokuvan säde kuvaajan koordinaatistossa. */
-const HEAD_R = 15;
-
 const state = { data: null, view: 'chart', swap: null };
 
 init();
@@ -147,9 +144,24 @@ function renderChart() {
     return;
   }
 
-  const W = 900;
-  const H = 360;
-  const M = { top: 16, right: 128, bottom: 34, left: 44 };
+  // Piirretään säiliön todelliselle leveydelle: kiinteä viewBox pienensi
+  // tekstit lukukelvottomiksi kapealla näytöllä ja pakotti vierittämään.
+  const available = Math.floor(host.clientWidth || host.parentElement?.clientWidth || 900);
+  if (available < 40) return; // säiliö on piilossa, piirretään kun se näkyy
+  const W = Math.max(280, available);
+  const narrow = W < 560;
+
+  // Kapealla näytöllä nimeä ja pistelukua ei mahdu viivan viereen, joten
+  // kärjessä on pelkkä kasvokuva. Nimet näkyvät selitteessä ja pisteet
+  // kuvaajan yläpuolisissa korteissa.
+  const H = narrow ? 260 : 360;
+  const headR = narrow ? 11 : 15;
+  const M = {
+    top: 14,
+    right: narrow ? headR * 2 + 8 : 128,
+    bottom: narrow ? 28 : 34,
+    left: narrow ? 30 : 44,
+  };
   const plotW = W - M.left - M.right;
   const plotH = H - M.top - M.bottom;
 
@@ -171,7 +183,7 @@ function renderChart() {
     )
     .join('');
 
-  const dateTicks = pickDateTicks(dates);
+  const dateTicks = pickDateTicks(dates, narrow ? 3 : 6);
   const xLabels = dateTicks
     .map(
       (date) =>
@@ -186,11 +198,12 @@ function renderChart() {
       const last = team.series[team.series.length - 1];
       return { team, points: last.points, valueY: y(last.points) };
     }),
-    M.top + HEAD_R,
-    M.top + plotH - HEAD_R,
+    M.top + headR,
+    M.top + plotH - headR,
+    headR * 2 + 4,
   );
 
-  const headX = M.left + plotW + HEAD_R + 6;
+  const headX = M.left + plotW + headR + 4;
   const series = ends
     .map(({ team, points, valueY, labelY }) => {
       // Viisto viiva pisteestä pisteeseen. Viimeisestä ottelupäivästä
@@ -206,7 +219,7 @@ function renderChart() {
         .slice(1)
         .map(
           (point) =>
-            `<circle class="series-dot" cx="${x(point.date)}" cy="${y(point.points)}" r="3.5" ` +
+            `<circle class="series-dot" cx="${x(point.date)}" cy="${y(point.points)}" r="${narrow ? 2.5 : 3.5}" ` +
             `fill="${escapeAttr(team.color)}"/>`,
         )
         .join('');
@@ -214,11 +227,13 @@ function renderChart() {
       return (
         `<path class="series-line" d="${d}" stroke="${escapeAttr(team.color)}"/>${dots}` +
         // Ohut yhdysviiva viivan päästä kasvokuvaan, kun merkintää on jouduttu siirtämään.
-        `<path class="series-leader" d="M${M.left + plotW} ${valueY} L${headX - HEAD_R} ${labelY}" ` +
+        `<path class="series-leader" d="M${M.left + plotW} ${valueY} L${headX - headR} ${labelY}" ` +
         `stroke="${escapeAttr(team.color)}"/>` +
-        headBadge(team, headX, labelY) +
-        `<text class="series-label" x="${headX + HEAD_R + 6}" y="${labelY + 4}" ` +
-        `fill="${escapeAttr(team.color)}">${escapeHtml(team.name)} ${points}</text>`
+        headBadge(team, headX, labelY, headR) +
+        (narrow
+          ? ''
+          : `<text class="series-label" x="${headX + headR + 6}" y="${labelY + 4}" ` +
+            `fill="${escapeAttr(team.color)}">${escapeHtml(team.name)} ${points}</text>`)
       );
     })
     .join('');
@@ -251,17 +266,17 @@ function renderLegend(teams) {
 }
 
 /** Pyöreäksi rajattu kasvokuva joukkueen värisellä kehyksellä. */
-function headBadge(team, cx, cy) {
+function headBadge(team, cx, cy, r) {
   const src = HEADS[team.id];
   if (!src) {
-    return `<circle cx="${cx}" cy="${cy}" r="${HEAD_R}" fill="${escapeAttr(team.color)}"/>`;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${escapeAttr(team.color)}"/>`;
   }
   const id = `head-${escapeAttr(team.id)}`;
   return (
-    `<defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${HEAD_R}"/></clipPath></defs>` +
-    `<image href="${escapeAttr(src)}" x="${cx - HEAD_R}" y="${cy - HEAD_R}" ` +
-    `width="${HEAD_R * 2}" height="${HEAD_R * 2}" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>` +
-    `<circle cx="${cx}" cy="${cy}" r="${HEAD_R}" fill="none" ` +
+    `<defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs>` +
+    `<image href="${escapeAttr(src)}" x="${cx - r}" y="${cy - r}" ` +
+    `width="${r * 2}" height="${r * 2}" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" ` +
     `stroke="${escapeAttr(team.color)}" stroke-width="2.5"/>`
   );
 }
@@ -273,8 +288,7 @@ function headBadge(team, cx, cy) {
  * riittää, ja lopuksi koko rypäs nostetaan takaisin alueen sisään jos se
  * valui alareunan yli.
  */
-function layoutEndLabels(entries, minY, maxY) {
-  const gap = HEAD_R * 2 + 4;
+function layoutEndLabels(entries, minY, maxY, gap) {
   const sorted = [...entries].sort((a, b) => a.valueY - b.valueY);
 
   let previous = -Infinity;
@@ -608,10 +622,10 @@ function axisTicks(top) {
   return Array.from({ length: TICK_COUNT + 1 }, (_, i) => (top / TICK_COUNT) * i);
 }
 
-/** Enintään kuusi päivämäärämerkintää, jotta ne eivät mene päällekkäin. */
-function pickDateTicks(dates) {
-  if (dates.length <= 6) return dates;
-  const step = Math.ceil(dates.length / 6);
+/** Rajaa päivämäärämerkintöjen määrän, jotteivät ne mene päällekkäin. */
+function pickDateTicks(dates, max) {
+  if (dates.length <= max) return dates;
+  const step = Math.ceil(dates.length / max);
   const picked = dates.filter((_, i) => i % step === 0);
   if (picked[picked.length - 1] !== dates[dates.length - 1]) picked.push(dates[dates.length - 1]);
   return picked;

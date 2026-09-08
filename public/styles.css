@@ -62,7 +62,7 @@ h1, h2, h3 { line-height: 1.2; margin: 0; }
   display: block;
   width: 100%;
   height: auto;
-  max-height: min(460px, 60vh);
+  max-height: min(400px, 44vh);
   object-fit: cover;
   /* Rajaus alareunasta: logo ja kasvot säilyvät kokonaan, jäätä jää pois. */
   object-position: center top;
@@ -150,10 +150,9 @@ main > * { min-width: 0; }
 .chart__canvas {
   width: 100%;
   min-width: 0;
-  overflow-x: auto;
 }
 
-.chart-wrap svg { display: block; width: 100%; height: auto; min-width: 520px; }
+.chart-wrap svg { display: block; width: 100%; height: auto; }
 .legend svg { display: block; width: 34px; height: 12px; }
 
 .chart__caption {

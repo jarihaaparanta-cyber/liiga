@@ -48,6 +48,19 @@ Ottelupäivien kohdalla on merkkipiste, joten todelliset havainnot erottuvat
 interpoloidusta välistä. Viimeisestä ottelupäivästä oikeaan reunaan viiva
 jatkuu vaakasuorana, koska uusia pisteitä ei ole tullut.
 
+## Kuvaaja piirretään säiliön leveydelle
+
+Kuvaajalla oli kiinteä 900 yksikön viewBox ja 520 pikselin vähimmäisleveys,
+joten kapealla näytöllä se joko kutistui lukukelvottomaksi tai vaati
+vaakavieritystä — ja vieritettävässä kuvaajassa tuorein tilanne jäi näkymän
+ulkopuolelle.
+
+Kuvaaja mitoitetaan nyt säiliön todelliselle leveydelle, jolloin teksti
+pysyy oikean kokoisena eikä mitään tarvitse vierittää. Kapealla näytöllä
+kärjessä on pelkkä kasvokuva ilman nimeä ja pistelukua: nimet näkyvät
+selitteessä ja pisteet kuvaajan yläpuolisissa korteissa, joten mitään ei
+katoa.
+
 ## Vain tumma teema
 
 Banneri on tumma hallikuva. Vaalea teema näyttäisi siltä, että banneri on
