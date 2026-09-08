@@ -456,10 +456,13 @@ function playerRow(player, team) {
   if (!player.isStarter && !player.active) classes.push('row-sub');
   if (player.isStarter && !player.active) classes.push('row-swapped-out');
 
-  const bench =
-    !player.active && player.benchPoints > 0
-      ? `<br><span class="bench-note">${player.benchPoints} p penkiltä</span>`
-      : '';
+  // Merkintä myös nollasta, jotta kaikki penkkirivit ovat samankorkuisia
+  // eivätkä kortit veny eri mittaisiksi. Vaihto siirtää yhden pelaajan
+  // penkiltä kentälle ja toisen kentältä penkille, joten merkintöjen määrä
+  // pysyy samana myös vaihtojen jälkeen.
+  const bench = player.active
+    ? ''
+    : `<br><span class="bench-note">${player.benchPoints} p penkiltä</span>`;
 
   return `<tr class="${classes.join(' ')}">
     <td class="col-role">${roleLabel(player)}</td>
