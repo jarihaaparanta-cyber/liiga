@@ -50,7 +50,7 @@ export interface StandingsTeam {
   id: string;
   name: string;
   color: string;
-  /** Onko joukkueelle asetettu tunnusluku. Ilman sitä vaihtoa ei voi tehdä. */
+  /** Onko joukkueelle asetettu tunnussana. Ilman sitä vaihtoa ei voi tehdä. */
   hasPin: boolean;
   players: StandingsPlayer[];
   points: number;

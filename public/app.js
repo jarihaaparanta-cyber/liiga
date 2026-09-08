@@ -341,7 +341,7 @@ function renderTeams() {
 function teamCard(team) {
   const rows = team.players.map((player) => playerRow(player, team)).join('');
   const swapsLeft = team.swapsLeft.F + team.swapsLeft.D;
-  // Ilman tunnuslukua vaihtoa ei voi vahvistaa, joten se kerrotaan tässä
+  // Ilman tunnussanaa vaihtoa ei voi vahvistaa, joten se kerrotaan tässä
   // eikä vasta silloin kun nappia on painettu.
   const locked = !team.hasPin;
   const log = team.swaps.length
@@ -385,7 +385,7 @@ function teamCard(team) {
         ${log}
         <button type="button" class="btn btn--block" data-swap-team="${escapeAttr(team.id)}"
           ${swapsLeft === 0 || locked ? 'disabled' : ''}>${
-            locked ? 'Tunnusluku puuttuu' : 'Tee vaihto'
+            locked ? 'Tunnussana puuttuu' : 'Tee vaihto'
           }</button>
       </div>
     </article>`;

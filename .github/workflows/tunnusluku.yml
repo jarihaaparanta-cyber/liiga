@@ -1,12 +1,12 @@
-# Asettaa joukkueen tunnusluvun, jolla vaihto vahvistetaan sivustolla.
-# Käynnistetään käsin GitHubin käyttöliittymästä: Actions > Aseta tunnusluku
+# Asettaa joukkueen tunnussanan, jolla vaihto vahvistetaan sivustolla.
+# Käynnistetään käsin GitHubin käyttöliittymästä: Actions > Aseta tunnussana
 # > Run workflow. Toimii myös puhelimella.
 #
-# Tietokantaan tallentuu vain tiiviste, ei tunnuslukua itseään. Huomaa silti
+# Tietokantaan tallentuu vain tiiviste, ei tunnussanaa itseään. Huomaa silti
 # että syöttämäsi luku jää GitHubin ajohistoriaan näkyviin niille, joilla on
 # pääsy tähän repositorioon.
 
-name: Aseta tunnusluku
+name: Aseta tunnussana
 
 on:
   workflow_dispatch:
@@ -16,8 +16,8 @@ on:
         required: true
         type: choice
         options: [apa, jarde, borje, niksu]
-      tunnusluku:
-        description: Uusi tunnusluku (vähintään 4 merkkiä)
+      tunnussana:
+        description: Uusi tunnussana (vähintään 4 merkkiä, kirjaimet käyvät)
         required: true
         type: string
 
@@ -42,13 +42,13 @@ jobs:
         run: |
           echo "::add-mask::$TUNNUSLUKU"
           if [ "${#TUNNUSLUKU}" -lt 4 ]; then
-            echo "Tunnusluvun pitää olla vähintään 4 merkkiä." >&2
+            echo "Tunnussanan pitää olla vähintään 4 merkkiä." >&2
             exit 1
           fi
           lause=$(node scripts/set-pin.mjs "$JOUKKUE" "$TUNNUSLUKU")
           node scripts/ensure-d1.mjs
           npx wrangler d1 execute liigaporssi --remote --command "$lause"
-          echo "Joukkueen $JOUKKUE tunnusluku asetettu." >> "$GITHUB_STEP_SUMMARY"
+          echo "Joukkueen $JOUKKUE tunnussana asetettu." >> "$GITHUB_STEP_SUMMARY"
         env:
           JOUKKUE: ${{ inputs.joukkue }}
-          TUNNUSLUKU: ${{ inputs.tunnusluku }}
+          TUNNUSLUKU: ${{ inputs.tunnussana }}

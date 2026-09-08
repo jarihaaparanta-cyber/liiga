@@ -1,9 +1,9 @@
 /**
- * Tulostaa SQL-lauseen jolla joukkueen tunnusluku asetetaan.
+ * Tulostaa SQL-lauseen jolla joukkueen tunnussana asetetaan.
  *
  *   node scripts/set-pin.mjs apa 1234
  *
- * Tunnusluku itse ei päädy tietokantaan, vain sen tiiviste. Aja tulostettu
+ * Tunnussana itse ei päädy tietokantaan, vain sen tiiviste. Aja tulostettu
  * lause komennolla:
  *
  *   npx wrangler d1 execute liigaporssi --remote --command "<lause>"
@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto';
 
 const [teamId, pin] = process.argv.slice(2);
 if (!teamId || !pin) {
-  console.error('Käyttö: node scripts/set-pin.mjs <joukkue> <tunnusluku>');
+  console.error('Käyttö: node scripts/set-pin.mjs <joukkue> <tunnussana>');
   process.exit(1);
 }
 

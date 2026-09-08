@@ -63,8 +63,8 @@ pisteet. Osoite näkyy ajon yhteenvedossa.
 
 Tämän jälkeen jokainen branchiin tuleva muutos julkaistaan automaattisesti.
 
-**5. Aseta tunnusluvut.** *Actions → Aseta tunnusluku → Run workflow*, kerran
-jokaiselle joukkueelle. Ilman tunnuslukua joukkueen vaihto on estetty, ja
+**5. Aseta tunnussanat.** *Actions → Aseta tunnussana → Run workflow*, kerran
+jokaiselle joukkueelle. Ilman tunnussanaa joukkueen vaihto on estetty, ja
 kortin nappi kertoo sen.
 
 ## Vaihdon peruminen
@@ -108,6 +108,6 @@ npm test
 | `migrations/` | D1-skeema. |
 | `data/rosters.json` | Kauden lähtökokoonpanot. |
 | `public/` | Selainkäyttöliittymä. |
-| `scripts/` | Kertaluontoiset apuskriptit: pelaajahaku, tunnusluvut, kuvien pakkaus. |
-| `.github/workflows/` | Julkaisu ja tunnuslukujen asetus. |
+| `scripts/` | Kertaluontoiset apuskriptit: pelaajahaku, tunnussanat, kuvien pakkaus. |
+| `.github/workflows/` | Julkaisu, tunnussanat ja vaihdon peruminen. |
 | `docs/` | Rajapinnan ja ulkoasun perustelut. |

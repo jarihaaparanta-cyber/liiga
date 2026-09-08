@@ -87,10 +87,10 @@ async function handleSwap(request: Request, env: Env): Promise<Response> {
   if (!team) return json({ error: 'Tuntematon joukkue.' }, 404);
 
   if (!team.pin_hash) {
-    return json({ error: 'Joukkueelle ei ole asetettu tunnuslukua, joten vaihtoa ei voi tehdä.' }, 403);
+    return json({ error: 'Joukkueelle ei ole asetettu tunnussanaa, joten vaihtoa ei voi tehdä.' }, 403);
   }
   if (!pin || (await hashPin(teamId, pin)) !== team.pin_hash) {
-    return json({ error: 'Väärä tunnusluku.' }, 403);
+    return json({ error: 'Väärä tunnussana.' }, 403);
   }
 
   const rosterRows = await env.DB.prepare(
@@ -138,7 +138,7 @@ async function handleSwap(request: Request, env: Env): Promise<Response> {
   return json({ ok: true, position: check.position, inPlayerId: check.inPlayerId, effectiveDate });
 }
 
-/** Tunnusluvun tiiviste. Joukkueen tunnus on suolana. */
+/** Tunnussanan tiiviste. Joukkueen tunnus on suolana. */
 export async function hashPin(teamId: string, pin: string): Promise<string> {
   const data = new TextEncoder().encode(`liigaporssi:${teamId}:${pin}`);
   const digest = await crypto.subtle.digest('SHA-256', data);
