@@ -93,6 +93,9 @@ ilmestyisivät takaisin vasta klo 21:30.
 
 Kesken oleva ottelu näkyy sivulla kolmella tavalla: merkkinä otsikossa,
 lukuna "+2" joukkueen pisteiden vieressä ja pystyviivana kuvaajassa.
+Kuvaaja ulottuu kuluvaan pelipäivään myös silloin kun pisteitä ei ole vielä
+tullut; muuten se ei kertoisi käynnissä olevasta ottelusta mitään ennen
+ensimmäistä osumaa.
 Sivu hakee tilanteen uudelleen minuutin välein niin kauan kuin ottelu on
 käynnissä.
 

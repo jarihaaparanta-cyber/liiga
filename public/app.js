@@ -178,7 +178,14 @@ function valueAt(series, date) {
 function renderChart() {
   const host = document.getElementById('chart');
   const teams = state.data?.teams ?? [];
-  const dates = [...new Set(teams.flatMap((t) => t.series.map((p) => p.date)))].sort();
+  const liveDate = state.data?.live?.active ? state.data.live.date : null;
+
+  // Kuluva pelipäivä otetaan mukaan vaikka pisteitä ei olisi vielä tullut.
+  // Muuten kuvaaja ei kertoisi mitään käynnissä olevasta ottelusta ennen
+  // ensimmäistä osumaa.
+  const dates = [
+    ...new Set([...teams.flatMap((t) => t.series.map((p) => p.date)), ...(liveDate ? [liveDate] : [])]),
+  ].sort();
 
   if (dates.length < 2) {
     host.innerHTML = '<p class="chart__caption">Kuvaaja piirtyy kun otteluita on pelattu.</p>';
@@ -279,9 +286,8 @@ function renderChart() {
     })
     .join('');
 
-  const liveDate = state.data.live?.active ? state.data.live.date : null;
   const liveMark =
-    liveDate && dates.includes(liveDate)
+    liveDate
       ? `<line class="live-line" x1="${x(liveDate)}" y1="${M.top}" ` +
         `x2="${x(liveDate)}" y2="${M.top + plotH}"/>` +
         `<text class="live-label" x="${x(liveDate) - 5}" y="${M.top + 9}" text-anchor="end">LIVE</text>`
