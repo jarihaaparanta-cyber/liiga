@@ -50,6 +50,8 @@ export interface StandingsTeam {
   id: string;
   name: string;
   color: string;
+  /** Onko joukkueelle asetettu tunnusluku. Ilman sitä vaihtoa ei voi tehdä. */
+  hasPin: boolean;
   players: StandingsPlayer[];
   points: number;
   swapsLeft: { F: number; D: number };
@@ -69,7 +71,12 @@ export async function loadStandings(
   seasonStart: string,
 ): Promise<Standings> {
   const [teams, roster, swaps, players, stats, lastSync] = await Promise.all([
-    all<TeamRow & { sort_order: number }>(db, 'SELECT id, name, color, sort_order FROM fantasy_teams ORDER BY sort_order'),
+    all<TeamRow & { sort_order: number; has_pin: number }>(
+      db,
+      `SELECT id, name, color, sort_order,
+              CASE WHEN pin_hash IS NULL OR pin_hash = '' THEN 0 ELSE 1 END AS has_pin
+         FROM fantasy_teams ORDER BY sort_order`,
+    ),
     all<{ team_id: string; player_id: number; position: Position; is_starter: number; slot_order: number }>(
       db, 'SELECT team_id, player_id, position, is_starter, slot_order FROM roster',
     ),
@@ -159,6 +166,7 @@ export async function loadStandings(
       id: team.id,
       name: team.name,
       color: team.color,
+      hasPin: team.has_pin === 1,
       players,
       points: tally.points,
       swapsLeft: tally.swapsLeft,
