@@ -6,7 +6,14 @@
  * ottelut, jotta kirjoituksia ei tehdä turhaan.
  */
 
-import { extractStats, fetchGames, fetchSummedStats, toPosition, type StatRow } from './liiga';
+import {
+  extractStats,
+  fetchGames,
+  fetchSummedStats,
+  toPosition,
+  type LiigaGame,
+  type StatRow,
+} from './liiga';
 import { addDays, helsinkiDate } from './time';
 
 export type SyncKind = 'backfill' | 'nightly' | 'correction' | 'manual';
@@ -153,7 +160,10 @@ export async function sync(
     }
     await runBatched(db, playerWrites);
 
-    const mismatches = verify(stats, summed);
+    // Käynnissä olevan ottelun pisteet näkyvät jo liiga.fi:n koosteessa,
+    // mutta omaan laskentaan ne tulevat vasta ottelun päätyttyä. Ilman tätä
+    // jokainen illan ottelu näyttäisi virheeltä.
+    const mismatches = verify(stats, summed, playersInLiveGames(allGames));
 
     await finishLog(db, logId, true, relevant.length, describe(mismatches));
     return {
@@ -175,7 +185,11 @@ export async function sync(
  * Näiden pitää täsmätä pelaaja pelaajalta; ero tarkoittaa että jokin
  * rajapinnassa on muuttunut. Vertailu tehdään aina koko kaudelta.
  */
-function verify(stats: StatRow[], summed: { playerId: number; firstName: string; lastName: string; goals: number; assists: number }[]): string[] {
+function verify(
+  stats: StatRow[],
+  summed: { playerId: number; firstName: string; lastName: string; goals: number; assists: number }[],
+  skip: Set<number>,
+): string[] {
   const computed = new Map<number, { goals: number; assists: number }>();
   for (const s of stats) {
     const row = computed.get(s.playerId) ?? { goals: 0, assists: 0 };
@@ -186,6 +200,7 @@ function verify(stats: StatRow[], summed: { playerId: number; firstName: string;
 
   const mismatches: string[] = [];
   for (const p of summed) {
+    if (skip.has(p.playerId)) continue;
     const c = computed.get(p.playerId) ?? { goals: 0, assists: 0 };
     if (c.goals !== p.goals || c.assists !== p.assists) {
       mismatches.push(
@@ -199,6 +214,28 @@ function verify(stats: StatRow[], summed: { playerId: number; firstName: string;
 function describe(mismatches: string[]): string {
   if (mismatches.length === 0) return 'ok';
   return `${mismatches.length} poikkeamaa: ${mismatches.slice(0, 5).join('; ')}`;
+}
+
+/**
+ * Pelaajat, jotka ovat tehneet pisteitä parhaillaan käynnissä olevassa
+ * ottelussa.
+ *
+ * Heidän kohdallaan liiga.fi:n kausikooste on jo edellä omaa laskentaamme,
+ * joten vertailu antaisi virheellisen poikkeaman. Ottelun päätyttyä luvut
+ * täsmäävät jälleen.
+ */
+export function playersInLiveGames(games: LiigaGame[]): Set<number> {
+  const ids = new Set<number>();
+  for (const game of games) {
+    if (!game.started || game.ended) continue;
+    for (const team of [game.homeTeam, game.awayTeam]) {
+      for (const event of team.goalEvents ?? []) {
+        ids.add(event.scorerPlayerId);
+        for (const assistantId of event.assistantPlayerIds ?? []) ids.add(assistantId);
+      }
+    }
+  }
+  return ids;
 }
 
 async function beginLog(db: D1Database, startedAt: string, kind: SyncKind): Promise<number> {

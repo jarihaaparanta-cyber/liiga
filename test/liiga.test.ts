@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { countsAsScoring, extractStats, toPosition, type LiigaGame } from '../src/liiga';
+import { playersInLiveGames } from '../src/sync';
 import fixture from './fixtures/games.json';
 
 // Oikeaa liiga.fi-dataa kaudelta 2026-27: kolme päättynyttä ottelua ja yksi
@@ -96,5 +97,36 @@ describe('toPosition', () => {
     expect(toPosition('H')).toBe('F');
     expect(toPosition('P')).toBe('D');
     expect(toPosition('MV')).toBe('G');
+  });
+});
+
+describe('playersInLiveGames', () => {
+  const live = (over: Partial<LiigaGame> = {}): LiigaGame =>
+    ({
+      id: 1,
+      start: '2026-09-08T15:30:00Z',
+      started: true,
+      ended: false,
+      serie: 'RUNKOSARJA',
+      homeTeam: {
+        teamName: 'HPK',
+        goalEvents: [
+          { scorerPlayerId: 11, assistantPlayerIds: [22, 33], goalTypes: [], goalsSoFarInSeason: 1 },
+        ],
+      },
+      awayTeam: { teamName: 'Ilves', goalEvents: [] },
+      ...over,
+    }) as LiigaGame;
+
+  it('kerää maalintekijät ja syöttäjät käynnissä olevasta ottelusta', () => {
+    expect([...playersInLiveGames([live()])].sort((a, b) => a - b)).toEqual([11, 22, 33]);
+  });
+
+  it('ohittaa päättyneen ottelun', () => {
+    expect(playersInLiveGames([live({ ended: true })]).size).toBe(0);
+  });
+
+  it('ohittaa alkamattoman ottelun', () => {
+    expect(playersInLiveGames([live({ started: false })]).size).toBe(0);
   });
 });

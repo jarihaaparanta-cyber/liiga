@@ -101,6 +101,11 @@ Huomionarvoista: `VT0` (59 kpl kaudessa) **lasketaan** normaalisti, joten
   ja `/api/v1/...` palauttavat 403:n tai HTML-sivun.
 - **Aikavyöhyke.** `start` on UTC:nä. Ottelupäivä on aina Suomen paikallinen
   kalenteripäivä.
+- **Kausikooste päivittyy kesken ottelun.** `players/stats/summed` sisältää
+  käynnissä olevan ottelun pisteet heti, mutta `goalEvents`-pohjainen laskenta
+  ottaa mukaan vain päättyneet ottelut. Vertailu antaa siksi poikkeaman
+  jokaisesta illan ottelusta niin kauan kuin peli on kesken. Käynnissä olevassa
+  ottelussa pisteitä tehneet pelaajat jätetään tarkistuksen ulkopuolelle.
 
 ## Seurojen lyhenteet
 
