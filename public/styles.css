@@ -247,12 +247,22 @@ main > * { min-width: 0; }
 }
 @media (max-width: 860px) { .teams { grid-template-columns: 1fr; } }
 
+/*
+ * Kortit venyvät rivin korkeimman mukaan, koska penkkipistemerkintä tekee
+ * osasta riveistä kaksirivisiä. Ilman tätä ylimääräinen tila jäi napin alle
+ * tyhjäksi kaistaleeksi. Pystysuuntainen flex ja alaosan margin-top: auto
+ * työntävät yhteispisteet ja napin kortin pohjaan, jolloin ne linjautuvat
+ * vierekkäisten korttien kanssa.
+ */
 .team {
+  display: flex;
+  flex-direction: column;
   background: var(--surface-sunken);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
 }
+
 
 .team__head {
   background: var(--team);
@@ -300,6 +310,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .bench-note { font-style: normal; font-size: .6875rem; color: var(--ink-muted); }
 
 .team__total {
+  /* Työntää yhteispisteet ja napin kortin pohjaan; ks. .team yllä. */
+  margin-top: auto;
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 1rem; padding: .7rem .9rem;
   background: var(--surface-raised);
