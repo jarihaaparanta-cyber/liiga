@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { countsAsScoring, extractStats, toPosition, type LiigaGame } from '../src/liiga';
+import {
+  countsAsScoring,
+  extractStats,
+  statsFromGame,
+  toPosition,
+  type LiigaGame,
+} from '../src/liiga';
 import { playersInLiveGames } from '../src/sync';
 import fixture from './fixtures/games.json';
 
@@ -128,5 +134,45 @@ describe('playersInLiveGames', () => {
 
   it('ohittaa alkamattoman ottelun', () => {
     expect(playersInLiveGames([live({ started: false })]).size).toBe(0);
+  });
+});
+
+describe('statsFromGame', () => {
+  it('laskee myös kesken olevan ottelun siihenastiset pisteet', () => {
+    const kesken = {
+      id: 99,
+      start: '2026-09-08T15:30:00Z',
+      started: true,
+      ended: false,
+      serie: 'RUNKOSARJA',
+      homeTeam: { teamName: 'HPK', goalEvents: [] },
+      awayTeam: {
+        teamName: 'Ilves',
+        goalEvents: [
+          { scorerPlayerId: 7, assistantPlayerIds: [8], goalTypes: [], goalsSoFarInSeason: 2 },
+          { scorerPlayerId: 7, assistantPlayerIds: [], goalTypes: ['YV'], goalsSoFarInSeason: 3 },
+        ],
+      },
+    } as unknown as LiigaGame;
+
+    expect(statsFromGame(kesken, '2026-09-08')).toEqual([
+      { playerId: 7, gameId: 99, gameDate: '2026-09-08', goals: 2, assists: 0 },
+      { playerId: 8, gameId: 99, gameDate: '2026-09-08', goals: 0, assists: 1 },
+    ]);
+  });
+
+  it('jättää voittolaukauksen pois myös kesken ottelun', () => {
+    const kesken = {
+      id: 98,
+      homeTeam: {
+        teamName: 'HPK',
+        goalEvents: [
+          { scorerPlayerId: 5, assistantPlayerIds: [], goalTypes: ['VL'], goalsSoFarInSeason: 0 },
+        ],
+      },
+      awayTeam: { teamName: 'Ilves', goalEvents: [] },
+    } as unknown as LiigaGame;
+
+    expect(statsFromGame(kesken, '2026-09-08')).toEqual([]);
   });
 });

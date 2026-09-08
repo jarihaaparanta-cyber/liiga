@@ -14,6 +14,7 @@ import {
   type RosterEntry,
   type Swap,
 } from './scoring';
+import { fetchGames, statsFromGame, type LiigaGame } from './liiga';
 import { addDays, helsinkiDate, helsinkiTime } from './time';
 
 export interface TeamRow {
@@ -50,6 +51,8 @@ export interface StandingsTeam {
   id: string;
   name: string;
   color: string;
+  /** Tänään kesken olevista otteluista kertyneet pisteet, jo mukana summassa. */
+  livePoints: number;
   /** Onko joukkueelle asetettu tunnussana. Ilman sitä vaihtoa ei voi tehdä. */
   hasPin: boolean;
   players: StandingsPlayer[];
@@ -77,17 +80,30 @@ export interface Schedule {
   games: ScheduleGame[];
 }
 
+/** Kesken olevien otteluiden tila. */
+export interface Live {
+  /** Onko juuri nyt ottelu käynnissä. */
+  active: boolean;
+  /** Päivä jolta live-pisteet ovat. */
+  date: string;
+  /** Montako ottelua on käynnissä. */
+  games: number;
+}
+
 export interface Standings {
   seasonStart: string;
   updatedAt: string | null;
   warning: string | null;
   /** Päivän ottelut, tai seuraava pelipäivä jos tänään ei pelata. */
   schedule: Schedule | null;
+  /** Kesken olevat ottelut, tai null jos mikään ei ole käynnissä. */
+  live: Live | null;
   teams: StandingsTeam[];
 }
 
 export async function loadStandings(
   db: D1Database,
+  season: string,
   seasonStart: string,
   now: Date = new Date(),
 ): Promise<Standings> {
@@ -117,7 +133,28 @@ export async function loadStandings(
       .first<{ finished_at: string; message: string }>(),
   ]);
 
-  const schedule = await loadSchedule(db, helsinkiDate(now));
+  const today = helsinkiDate(now);
+  const [schedule, liveData] = await Promise.all([
+    loadSchedule(db, today),
+    loadLive(db, season, today, now),
+  ]);
+
+  // Live-suoritukset lisätään tietokannan rivien perään. Ne koskevat vain
+  // tätä päivää eivätkä ole vielä tietokannassa, joten päällekkäisyyttä ei
+  // synny.
+  const liveByPlayer = new Map<number, number>();
+  for (const stat of liveData?.stats ?? []) {
+    stats.push({
+      player_id: stat.playerId,
+      game_date: stat.gameDate,
+      goals: stat.goals,
+      assists: stat.assists,
+    });
+    liveByPlayer.set(
+      stat.playerId,
+      (liveByPlayer.get(stat.playerId) ?? 0) + stat.goals + stat.assists,
+    );
+  }
 
   const nameById = new Map(players.map((p) => [p.id, p]));
   const rosterIds = [...new Set(roster.map((r) => r.player_id))];
@@ -185,11 +222,18 @@ export async function loadStandings(
       };
     });
 
+    // Live-pisteet lasketaan vain kokoonpanossa olevilta pelaajilta, samoin
+    // kuin varsinainen saldo.
+    const livePoints = tally.players
+      .filter((p) => p.active)
+      .reduce((sum, p) => sum + (liveByPlayer.get(p.playerId) ?? 0), 0);
+
     result.push({
       id: team.id,
       name: team.name,
       color: team.color,
       hasPin: team.has_pin === 1,
+      livePoints,
       players,
       points: tally.points,
       swapsLeft: tally.swapsLeft,
@@ -208,7 +252,68 @@ export async function loadStandings(
     updatedAt: lastSync?.finished_at ?? null,
     warning: mismatch,
     schedule,
+    live: liveData ? { active: liveData.active, date: today, games: liveData.games } : null,
     teams: result,
+  };
+}
+
+/**
+ * Kesken olevien ja juuri päättyneiden otteluiden suoritukset.
+ *
+ * Tietokantaan kirjoitetaan vasta illan synkronoinnissa, joten päivän aikana
+ * pisteet haetaan suoraan liiga.fi:stä. Mukaan otetaan myös jo päättyneet
+ * ottelut, joita synkronointi ei ole vielä ehtinyt tallentaa — muuten
+ * pisteet katoaisivat näkyvistä ottelun päätyttyä ja ilmestyisivät takaisin
+ * vasta klo 21:30.
+ *
+ * Haku on ohitettavissa: jos liiga.fi ei vastaa, sivu näyttää tietokannan
+ * tilanteen eikä kaadu.
+ */
+async function loadLive(
+  db: D1Database,
+  season: string,
+  today: string,
+  now: Date,
+): Promise<{ stats: ReturnType<typeof statsFromGame>; active: boolean; games: number } | null> {
+  // Haetaan vain jos päivän ottelu on jo ehtinyt alkaa eikä sitä ole vielä
+  // merkitty päättyneeksi. Muuten sivu hakisi liiga.fi:tä turhaan koko päivän.
+  const pending = await db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM games
+        WHERE game_date = ? AND finished = 0 AND start_time IS NOT NULL AND start_time <= ?`,
+    )
+    .bind(today, now.toISOString())
+    .first<{ n: number }>();
+  if ((pending?.n ?? 0) === 0) return null;
+
+  let games: LiigaGame[];
+  try {
+    games = await fetchGames(season);
+  } catch {
+    return null;
+  }
+
+  const storedFinished = new Set(
+    (
+      await all<{ id: number }>(db, 'SELECT id FROM games WHERE game_date = ? AND finished = 1', [
+        today,
+      ])
+    ).map((r) => r.id),
+  );
+
+  const relevant = games.filter(
+    (game) =>
+      (!game.serie || game.serie === 'RUNKOSARJA') &&
+      game.started &&
+      !storedFinished.has(game.id) &&
+      helsinkiDate(new Date(game.start)) === today,
+  );
+  if (relevant.length === 0) return null;
+
+  return {
+    stats: relevant.flatMap((game) => statsFromGame(game, today)),
+    active: relevant.some((game) => !game.ended),
+    games: relevant.filter((game) => !game.ended).length,
   };
 }
 

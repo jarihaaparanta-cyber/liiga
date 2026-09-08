@@ -22,7 +22,10 @@
   <main>
     <!-- Kärkitilanne isoina lukuina: tämä on se mitä sivulta ensimmäisenä katsotaan. -->
     <section id="tilanne" class="panel" aria-labelledby="tilanne-otsikko">
-      <h2 id="tilanne-otsikko">Tilanne</h2>
+      <div class="panel__head">
+        <h2 id="tilanne-otsikko">Tilanne</h2>
+        <span class="live-pill" id="live-badge" hidden></span>
+      </div>
       <ol class="leaderboard" id="leaderboard"></ol>
     </section>
 

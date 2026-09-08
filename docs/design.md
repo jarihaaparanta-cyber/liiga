@@ -74,6 +74,28 @@ kärjessä on pelkkä kasvokuva ilman nimeä ja pistelukua: nimet näkyvät
 selitteessä ja pisteet kuvaajan yläpuolisissa korteissa, joten mitään ei
 katoa.
 
+## Kesken olevat ottelut
+
+Pisteet päivittyvät ottelun aikana, jotta sivulta voi seurata miten saldo
+kasvaa illan mittaan. Ne eivät kuitenkaan mene tietokantaan kesken pelin:
+tietokanta on lukittu totuus, jonka illan synkronointi kirjoittaa vasta
+ottelun päätyttyä.
+
+Käytännössä tämä tarkoittaa, että kesken olevien otteluiden suoritukset
+haetaan liiga.fi:stä sivupyynnön yhteydessä ja lisätään tietokannan rivien
+päälle. Haku tehdään vain silloin kun päivän ottelu on jo alkanut eikä sitä
+ole vielä merkitty päättyneeksi, ja se on ohitettavissa: jos liiga.fi ei
+vastaa, sivu näyttää tietokannan tilanteen eikä kaadu.
+
+Mukaan otetaan myös jo päättyneet ottelut, joita synkronointi ei ole vielä
+ehtinyt tallentaa. Muuten pisteet katoaisivat näkyvistä ottelun päätyttyä ja
+ilmestyisivät takaisin vasta klo 21:30.
+
+Kesken oleva ottelu näkyy sivulla kolmella tavalla: merkkinä otsikossa,
+lukuna "+2" joukkueen pisteiden vieressä ja pystyviivana kuvaajassa.
+Sivu hakee tilanteen uudelleen minuutin välein niin kauan kuin ottelu on
+käynnissä.
+
 ## Vain tumma teema
 
 Banneri on tumma hallikuva. Vaalea teema näyttäisi siltä, että banneri on

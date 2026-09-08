@@ -50,7 +50,7 @@ export default {
 
 async function route(request: Request, env: Env, url: URL): Promise<Response> {
   if (url.pathname === '/api/standings' && request.method === 'GET') {
-    return json(await loadStandings(env.DB, env.SEASON_START));
+    return json(await loadStandings(env.DB, env.SEASON, env.SEASON_START));
   }
 
   if (url.pathname === '/api/swap' && request.method === 'POST') {

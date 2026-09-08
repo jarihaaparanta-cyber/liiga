@@ -26,6 +26,10 @@ const TICK_COUNT = 4;
 
 const state = { data: null, view: 'chart', swap: null };
 
+/** Kesken olevan ottelun aikana sivu hakee tilanteen uudelleen tämän välein. */
+const LIVE_REFRESH_MS = 60_000;
+let refreshTimer = null;
+
 init();
 
 async function init() {
@@ -51,12 +55,36 @@ async function load() {
 
 function renderAll() {
   renderNotice();
+  renderLiveState();
   renderLeaderboard();
   renderChart();
   renderChartTable();
   renderTeams();
   renderSchedule();
   renderUpdated();
+  scheduleRefresh();
+}
+
+/**
+ * Kesken olevan ottelun aikana pisteet muuttuvat, joten sivu päivittää
+ * itsensä. Vaihtoikkunan ollessa auki päivitys jätetään väliin, jottei
+ * valinta katoa kesken kaiken.
+ */
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  if (!state.data?.live?.active) return;
+  refreshTimer = setTimeout(() => {
+    if (document.getElementById('swap-dialog').open) {
+      scheduleRefresh();
+      return;
+    }
+    load();
+  }, LIVE_REFRESH_MS);
+}
+
+/** Merkintä "+2" kesken ottelun kertyneistä pisteistä. */
+function liveBadge(points) {
+  return points > 0 ? `<span class="live-badge">+${points}</span>` : '';
 }
 
 /* ---------------- Kärkitilanne ---------------- */
@@ -73,11 +101,23 @@ function renderLeaderboard() {
         <li class="rank" style="--team:${escapeAttr(team.color)}">
           <span class="rank__place">${shared ? `jaettu ${place}.` : `${place}.`}</span>
           <span class="rank__name">${escapeHtml(team.name)}</span>
-          <span class="rank__points">${team.points}</span>
+          <span class="rank__points">${team.points}${liveBadge(team.livePoints)}</span>
           <span class="rank__unit">pistettä</span>
         </li>`;
     })
     .join('');
+}
+
+function renderLiveState() {
+  const live = state.data.live;
+  const badge = document.getElementById('live-badge');
+  if (!live?.active) {
+    badge.hidden = true;
+    return;
+  }
+  badge.hidden = false;
+  badge.textContent =
+    live.games === 1 ? 'Ottelu käynnissä' : `${live.games} ottelua käynnissä`;
 }
 
 function renderNotice() {
@@ -239,11 +279,19 @@ function renderChart() {
     })
     .join('');
 
+  const liveDate = state.data.live?.active ? state.data.live.date : null;
+  const liveMark =
+    liveDate && dates.includes(liveDate)
+      ? `<line class="live-line" x1="${x(liveDate)}" y1="${M.top}" ` +
+        `x2="${x(liveDate)}" y2="${M.top + plotH}"/>` +
+        `<text class="live-label" x="${x(liveDate) - 5}" y="${M.top + 9}" text-anchor="end">LIVE</text>`
+      : '';
+
   host.innerHTML =
     renderLegend(teams) +
     `<div class="chart-wrap">
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Joukkueiden pistekertymä runkosarjan aikana">
-        ${gridlines}${xLabels}${series}
+        ${gridlines}${xLabels}${liveMark}${series}
         <line class="crosshair" id="crosshair" x1="0" y1="${M.top}" x2="0" y2="${M.top + plotH}" style="display:none"/>
         <rect id="hit" x="${M.left}" y="${M.top}" width="${plotW}" height="${plotH}" fill="transparent"/>
       </svg>
@@ -432,7 +480,7 @@ function teamCard(team) {
       </table>
       <div class="team__total">
         <span class="team__total-label">Avauskokoonpanon yhteispisteet</span>
-        <span class="team__total-value">${team.points}</span>
+        <span class="team__total-value">${team.points}${liveBadge(team.livePoints)}</span>
       </div>
       <div class="team__foot">
         ${log}

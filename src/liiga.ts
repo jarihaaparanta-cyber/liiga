@@ -121,31 +121,44 @@ export function extractStats(games: LiigaGame[]): { games: GameRow[]; stats: Sta
       awayGoals: game.awayTeam.goals ?? null,
     });
     if (!game.ended) continue;
-
-    // Kootaan ensin per pelaaja, jotta usean maalin ottelusta tulee yksi rivi.
-    const perPlayer = new Map<number, { goals: number; assists: number }>();
-    const bump = (playerId: number, field: 'goals' | 'assists') => {
-      const row = perPlayer.get(playerId) ?? { goals: 0, assists: 0 };
-      row[field] += 1;
-      perPlayer.set(playerId, row);
-    };
-
-    for (const team of [game.homeTeam, game.awayTeam]) {
-      for (const event of team.goalEvents ?? []) {
-        if (!countsAsScoring(event)) continue;
-        bump(event.scorerPlayerId, 'goals');
-        for (const assistantId of event.assistantPlayerIds ?? []) {
-          bump(assistantId, 'assists');
-        }
-      }
-    }
-
-    for (const [playerId, row] of perPlayer) {
-      stats.push({ playerId, gameId: game.id, gameDate, goals: row.goals, assists: row.assists });
-    }
+    stats.push(...statsFromGame(game, gameDate));
   }
 
   return { games: gameRows, stats };
+}
+
+/**
+ * Yhden ottelun suoritukset pelaajittain.
+ *
+ * Toimii myös kesken olevalle ottelulle: `goalEvents` sisältää siihenastiset
+ * maalit. Kutsuja päättää otetaanko keskeneräinen ottelu mukaan.
+ */
+export function statsFromGame(game: LiigaGame, gameDate: string): StatRow[] {
+  // Kootaan per pelaaja, jotta usean maalin ottelusta tulee yksi rivi.
+  const perPlayer = new Map<number, { goals: number; assists: number }>();
+  const bump = (playerId: number, field: 'goals' | 'assists') => {
+    const row = perPlayer.get(playerId) ?? { goals: 0, assists: 0 };
+    row[field] += 1;
+    perPlayer.set(playerId, row);
+  };
+
+  for (const team of [game.homeTeam, game.awayTeam]) {
+    for (const event of team.goalEvents ?? []) {
+      if (!countsAsScoring(event)) continue;
+      bump(event.scorerPlayerId, 'goals');
+      for (const assistantId of event.assistantPlayerIds ?? []) {
+        bump(assistantId, 'assists');
+      }
+    }
+  }
+
+  return [...perPlayer].map(([playerId, row]) => ({
+    playerId,
+    gameId: game.id,
+    gameDate,
+    goals: row.goals,
+    assists: row.assists,
+  }));
 }
 
 async function getJson<T>(url: string): Promise<T> {
