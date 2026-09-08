@@ -99,6 +99,21 @@ ensimmäistä osumaa.
 Sivu hakee tilanteen uudelleen minuutin välein niin kauan kuin ottelu on
 käynnissä.
 
+## Pisteputken liekit
+
+Pelaajan nimen perässä on liekki jokaisesta peräkkäisestä pisteottelusta
+ensimmäisen jälkeen: kaksi ottelua putkeen on yksi liekki, kolme on kaksi,
+ja niin edelleen viiteen liekkiin asti. Pisteetön ottelu nollaa putken.
+
+Putki lasketaan pelaajan **seuran** otteluista, koska rajapinta ei kerro
+ottelukohtaisia kokoonpanoja: `games/{kausi}/{id}` palauttaa seuran koko
+rosterin, joka on sama ottelusta toiseen. Väliin jäänyt ottelu katkaisee
+siis putken samoin kuin pisteetön ottelu.
+
+Kesken oleva ottelu ei vaikuta putkeen ennen kuin se päättyy. Muuten putki
+näyttäisi katkeavan heti avauspaikkojen jälkeen ja palaavan vasta
+ensimmäisestä pisteestä.
+
 ## Vain tumma teema
 
 Banneri on tumma hallikuva. Vaalea teema näyttäisi siltä, että banneri on

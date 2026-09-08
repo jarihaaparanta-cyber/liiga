@@ -38,6 +38,7 @@ export interface SummedPlayer {
   firstName: string;
   lastName: string;
   teamShortName: string;
+  teamName: string;
   role: string;
   games: number;
   goals: number;

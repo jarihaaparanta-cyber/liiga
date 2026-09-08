@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   activeIntervals,
   cumulativeSeries,
+  flames,
+  pointStreak,
   tallyTeam,
   validateSwap,
   type GameStat,
@@ -169,5 +171,33 @@ describe('validateSwap', () => {
 
   it('torjuu vieraan pelaajan', () => {
     expect(validateSwap(roster, [], 999).ok).toBe(false);
+  });
+});
+
+describe('pointStreak ja flames', () => {
+  const peli = (points: number) => ({ points });
+
+  it('laskee putken uusimmasta taaksepäin', () => {
+    expect(pointStreak([peli(1), peli(0), peli(2), peli(1), peli(3)])).toBe(3);
+  });
+
+  it('katkeaa viimeisimpään pisteettömään otteluun', () => {
+    expect(pointStreak([peli(2), peli(2), peli(0)])).toBe(0);
+  });
+
+  it('on nolla ilman otteluita', () => {
+    expect(pointStreak([])).toBe(0);
+  });
+
+  it('antaa liekin vasta kahdesta peräkkäisestä ottelusta', () => {
+    expect(flames(0)).toBe(0);
+    expect(flames(1)).toBe(0);
+    expect(flames(2)).toBe(1);
+    expect(flames(3)).toBe(2);
+  });
+
+  it('rajaa liekit viiteen', () => {
+    expect(flames(6)).toBe(5);
+    expect(flames(12)).toBe(5);
   });
 });

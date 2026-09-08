@@ -254,3 +254,33 @@ export function validateSwap(
 
   return { ok: true, position, inPlayerId: sub.playerId };
 }
+
+/**
+ * Peräkkäisten pisteotteluiden määrä uusimmasta taaksepäin.
+ *
+ * `games` on pelaajan seuran päättyneet ottelut aikajärjestyksessä, ja
+ * `points` kertoo montako pistettä pelaaja teki kussakin. Nolla katkaisee
+ * putken. Rajapinta ei kerro ottelukohtaisia kokoonpanoja, joten myös
+ * väliin jäänyt ottelu katkaisee putken — pelaaja ei silloinkaan tuottanut
+ * pisteitä.
+ */
+export function pointStreak(games: { points: number }[]): number {
+  let streak = 0;
+  for (let i = games.length - 1; i >= 0; i--) {
+    if ((games[i]?.points ?? 0) <= 0) break;
+    streak += 1;
+  }
+  return streak;
+}
+
+/**
+ * Liekkien määrä putken pituudesta.
+ *
+ * Kaksi peräkkäistä pisteottelua on yksi liekki, ja jokainen ottelu sen
+ * jälkeen lisää yhden. Enimmäismäärä on viisi liekkiä eli kuusi ottelua.
+ */
+export const MAX_FLAMES = 5;
+
+export function flames(streak: number): number {
+  return Math.min(Math.max(streak - 1, 0), MAX_FLAMES);
+}

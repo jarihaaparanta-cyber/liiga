@@ -8,6 +8,8 @@
 
 import {
   cumulativeSeries,
+  flames,
+  pointStreak,
   tallyTeam,
   type GameStat,
   type Position,
@@ -45,6 +47,10 @@ export interface StandingsPlayer {
   points: number;
   /** Kokoonpanon ulkopuolella kertyneet pisteet. Näytetään harmaana. */
   benchPoints: number;
+  /** Peräkkäiset ottelut joissa pelaaja on tehnyt pisteitä. */
+  streak: number;
+  /** Liekkien määrä putkesta, 0–5. */
+  flames: number;
 }
 
 export interface StandingsTeam {
@@ -120,12 +126,12 @@ export async function loadStandings(
     all<{ team_id: string; position: Position; out_player_id: number; in_player_id: number; effective_date: string }>(
       db, 'SELECT team_id, position, out_player_id, in_player_id, effective_date FROM swaps',
     ),
-    all<PlayerInfo & { first_name: string; last_name: string }>(
-      db, 'SELECT id, first_name, last_name, team FROM players',
+    all<PlayerInfo & { first_name: string; last_name: string; team_name: string | null }>(
+      db, 'SELECT id, first_name, last_name, team, team_name FROM players',
     ),
-    all<{ player_id: number; game_date: string; goals: number; assists: number }>(
+    all<{ player_id: number; game_id: number; game_date: string; goals: number; assists: number }>(
       db,
-      `SELECT s.player_id, s.game_date, s.goals, s.assists
+      `SELECT s.player_id, s.game_id, s.game_date, s.goals, s.assists
          FROM player_game_stats s
          JOIN roster r ON r.player_id = s.player_id`,
     ),
@@ -146,6 +152,7 @@ export async function loadStandings(
   for (const stat of liveData?.stats ?? []) {
     stats.push({
       player_id: stat.playerId,
+      game_id: stat.gameId,
       game_date: stat.gameDate,
       goals: stat.goals,
       assists: stat.assists,
@@ -157,6 +164,7 @@ export async function loadStandings(
   }
 
   const nameById = new Map(players.map((p) => [p.id, p]));
+  const streaks = await loadStreaks(db, players, stats, liveData?.endedGames ?? [], today);
   const rosterIds = [...new Set(roster.map((r) => r.player_id))];
 
   // Otteluiden määrä aikavälille saadaan tilannekuvien erotuksena. Rajapäiviä
@@ -219,6 +227,8 @@ export async function loadStandings(
         assists: p.counted.assists,
         points: p.counted.points,
         benchPoints: p.bench.points,
+        streak: streaks.get(p.playerId) ?? 0,
+        flames: flames(streaks.get(p.playerId) ?? 0),
       };
     });
 
@@ -258,6 +268,68 @@ export async function loadStandings(
 }
 
 /**
+ * Pelaajien pisteputket: montako peräkkäistä ottelua pisteitä on tullut.
+ *
+ * Putki lasketaan pelaajan seuran otteluista, koska rajapinta ei kerro
+ * ottelukohtaisia kokoonpanoja. Väliin jäänyt ottelu katkaisee putken
+ * samoin kuin pisteetön ottelu.
+ *
+ * Mukaan otetaan vain päättyneet ottelut. Kesken oleva ottelu katkaisisi
+ * putken heti alkuhetkellä ja palauttaisi sen vasta ensimmäisestä pisteestä,
+ * mikä näyttäisi rikkinäiseltä.
+ */
+async function loadStreaks(
+  db: D1Database,
+  players: { id: number; team_name: string | null }[],
+  stats: { player_id: number; game_id: number }[],
+  liveEnded: { id: number; homeTeam: string; awayTeam: string; date: string }[],
+  today: string,
+): Promise<Map<number, number>> {
+  // Pisin mahdollinen putki on kuusi ottelua, joten muutaman viikon ikkuna
+  // riittää eikä koko kauden otteluita tarvitse siirtää.
+  const since = addDays(today, -60);
+  const finished = await all<{ id: number; game_date: string; home_team: string; away_team: string }>(
+    db,
+    `SELECT id, game_date, home_team, away_team FROM games
+      WHERE finished = 1 AND game_date >= ? ORDER BY game_date, id`,
+    [since],
+  );
+
+  const all_ = [
+    ...finished.map((g) => ({
+      id: g.id,
+      date: g.game_date,
+      teams: [g.home_team, g.away_team],
+    })),
+    // Juuri päättyneet ottelut eivät ole vielä tietokannassa.
+    ...liveEnded
+      .filter((g) => !finished.some((f) => f.id === g.id))
+      .map((g) => ({ id: g.id, date: g.date, teams: [g.homeTeam, g.awayTeam] })),
+  ].sort((a, b) => (a.date === b.date ? a.id - b.id : a.date < b.date ? -1 : 1));
+
+  const byClub = new Map<string, { id: number }[]>();
+  for (const game of all_) {
+    for (const team of game.teams) {
+      const list = byClub.get(team) ?? [];
+      list.push({ id: game.id });
+      byClub.set(team, list);
+    }
+  }
+
+  const scored = new Set(stats.map((s) => `${s.player_id}:${s.game_id}`));
+
+  const result = new Map<number, number>();
+  for (const player of players) {
+    const clubGames = player.team_name ? (byClub.get(player.team_name) ?? []) : [];
+    result.set(
+      player.id,
+      pointStreak(clubGames.map((g) => ({ points: scored.has(`${player.id}:${g.id}`) ? 1 : 0 }))),
+    );
+  }
+  return result;
+}
+
+/**
  * Kesken olevien ja juuri päättyneiden otteluiden suoritukset.
  *
  * Tietokantaan kirjoitetaan vasta illan synkronoinnissa, joten päivän aikana
@@ -274,7 +346,12 @@ async function loadLive(
   season: string,
   today: string,
   now: Date,
-): Promise<{ stats: ReturnType<typeof statsFromGame>; active: boolean; games: number } | null> {
+): Promise<{
+  stats: ReturnType<typeof statsFromGame>;
+  active: boolean;
+  games: number;
+  endedGames: { id: number; homeTeam: string; awayTeam: string; date: string }[];
+} | null> {
   // Haetaan vain jos päivän ottelu on jo ehtinyt alkaa eikä sitä ole vielä
   // merkitty päättyneeksi. Muuten sivu hakisi liiga.fi:tä turhaan koko päivän.
   const pending = await db
@@ -314,6 +391,14 @@ async function loadLive(
     stats: relevant.flatMap((game) => statsFromGame(game, today)),
     active: relevant.some((game) => !game.ended),
     games: relevant.filter((game) => !game.ended).length,
+    endedGames: relevant
+      .filter((game) => game.ended)
+      .map((game) => ({
+        id: game.id,
+        homeTeam: game.homeTeam.teamName,
+        awayTeam: game.awayTeam.teamName,
+        date: today,
+      })),
   };
 }
 

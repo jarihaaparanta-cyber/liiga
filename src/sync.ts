@@ -134,16 +134,26 @@ export async function sync(
       playerWrites.push(
         db
           .prepare(
-            `INSERT INTO players (id, first_name, last_name, team, position, jersey, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?)
+            `INSERT INTO players (id, first_name, last_name, team, team_name, position, jersey, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
                first_name = excluded.first_name,
                last_name  = excluded.last_name,
                team       = excluded.team,
+               team_name  = excluded.team_name,
                position   = excluded.position,
                updated_at = excluded.updated_at`,
           )
-          .bind(p.playerId, p.firstName, p.lastName, p.teamShortName, toPosition(p.role), null, startedAt),
+          .bind(
+            p.playerId,
+            p.firstName,
+            p.lastName,
+            p.teamShortName,
+            p.teamName,
+            toPosition(p.role),
+            null,
+            startedAt,
+          ),
       );
       playerWrites.push(
         db

@@ -520,7 +520,7 @@ function playerRow(player, team) {
 
   return `<tr class="${classes.join(' ')}">
     <td class="col-role">${roleLabel(player)}</td>
-    <td class="col-player">${escapeHtml(player.name)}${bench}</td>
+    <td class="col-player">${escapeHtml(player.name)}${flameIcons(player)}${bench}</td>
     <td class="col-club">${escapeHtml(player.club)}</td>
     <td class="num">${player.games}</td>
     <td class="num">${player.goals}</td>
@@ -533,6 +533,19 @@ function playerRow(player, team) {
  * Rooli kahtena mittana: koko sana leveälle näytölle ja lyhenne kapealle.
  * Kapealla näytöllä "Varahyökkääjä" veisi tilan pelaajan nimeltä.
  */
+/**
+ * Liekit pisteputkesta: kaksi peräkkäistä pisteottelua on yksi liekki ja
+ * jokainen sen jälkeinen lisää yhden, enintään viisi.
+ */
+function flameIcons(player) {
+  if (!player.flames) return '';
+  return (
+    ` <span class="flames" title="Pisteitä ${player.streak} ottelussa peräkkäin">` +
+    '🔥'.repeat(player.flames) +
+    '</span>'
+  );
+}
+
 function roleLabel(player) {
   const isForward = player.position === 'F';
   const base = isForward ? 'Hyökkääjä' : 'Pakki';
