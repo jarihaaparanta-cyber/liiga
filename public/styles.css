@@ -92,7 +92,10 @@ main {
   gap: var(--pad);
 }
 
+main > * { min-width: 0; }
+
 .panel {
+  min-width: 0;
   background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -118,7 +121,7 @@ main {
 .leaderboard {
   list-style: none; margin: 1rem 0 0; padding: 0;
   display: grid; gap: .75rem;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .rank {
@@ -145,6 +148,7 @@ main {
 
 .chart__canvas {
   width: 100%;
+  min-width: 0;
   overflow-x: auto;
 }
 
@@ -202,6 +206,7 @@ main {
 .teams {
   display: grid; gap: var(--pad);
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
 }
 @media (max-width: 860px) { .teams { grid-template-columns: 1fr; } }
 
@@ -238,7 +243,9 @@ thead th[title] { cursor: help; }
 thead th:first-child, thead th:nth-child(2) { text-align: left; }
 
 tbody td { padding: .4rem .35rem; border-bottom: 1px solid var(--line); text-align: right; }
-.col-player { overflow-wrap: anywhere; }
+/* Katkaise nimi vain jos yksittäinen sana ei muuten mahdu. */
+.col-player { overflow-wrap: break-word; }
+.role-short { display: none; }
 tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
 tbody tr:last-child td { border-bottom: 0; }
 
@@ -351,6 +358,22 @@ tbody tr:last-child td { border-bottom: 0; }
 @media (max-width: 720px) {
   .sponsors__row { grid-template-columns: 1fr; }
   .sponsor--tall { max-width: 340px; }
+}
+
+/*
+ * Kapealla näytöllä kiinteät sarakeleveydet eivät jätä pelaajan nimelle
+ * tilaa, jolloin nimi katkeaa kirjain kerrallaan. Annetaan selaimen jakaa
+ * leveydet itse ja tiivistetään tekstiä.
+ */
+@media (max-width: 560px) {
+  .team table { table-layout: auto; font-size: .75rem; }
+  .team col { width: auto; }
+  .col-role { font-size: .625rem; white-space: nowrap; }
+  .col-club { font-size: .6875rem; }
+  .role-long { display: none; }
+  .role-short { display: inline; }
+  thead th { padding: .4rem .25rem; }
+  tbody td { padding: .4rem .25rem; }
 }
 
 /* ---------- Alatunniste ---------- */

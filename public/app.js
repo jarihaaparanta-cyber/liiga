@@ -411,10 +411,28 @@ function playerRow(player, team) {
   </tr>`;
 }
 
+/**
+ * Rooli kahtena mittana: koko sana leveälle näytölle ja lyhenne kapealle.
+ * Kapealla näytöllä "Varahyökkääjä" veisi tilan pelaajan nimeltä.
+ */
 function roleLabel(player) {
-  const base = player.position === 'F' ? 'Hyökkääjä' : 'Pakki';
-  if (player.isStarter) return player.active ? base : `${base} · pois`;
-  return player.active ? `${base} · sisään` : `Vara${base.toLowerCase()}`;
+  const isForward = player.position === 'F';
+  const base = isForward ? 'Hyökkääjä' : 'Pakki';
+  const abbr = isForward ? 'HYÖ' : 'PAK';
+
+  let long;
+  let short;
+  if (player.isStarter) {
+    long = player.active ? base : `${base} · pois`;
+    short = player.active ? abbr : `${abbr}·pois`;
+  } else if (player.active) {
+    long = `${base} · sisään`;
+    short = `${abbr}·sis.`;
+  } else {
+    long = `Vara${base.toLowerCase()}`;
+    short = `V-${abbr}`;
+  }
+  return `<span class="role-long">${long}</span><span class="role-short" title="${long}">${short}</span>`;
 }
 
 /* ---------------- Vaihto ---------------- */

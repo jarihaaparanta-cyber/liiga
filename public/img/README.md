@@ -1,13 +1,21 @@
 # Kuvat
 
-Lisää nämä kolme tiedostoa tähän hakemistoon. Nimet on kiinnitetty koodiin,
-joten oikea tiedosto vain korvaa paikkamerkin — koodiin ei tarvitse koskea.
+Sivusto käyttää WebP-muotoa, joka on samalla laadulla murto-osan PNG:n
+kokoisesta. Muunna alkuperäinen kuva komennolla:
 
-| Tiedosto | Sisältö | Suositeltu koko |
+```bash
+node scripts/optimize-image.mjs ~/kuvat/mainos.png public/img/sponsor-ainto.webp
+```
+
+Skripti rajaa samalla pois yläreunan valkoisen kaistaleen ja kertoo
+lopputuloksen koon.
+
+| Tiedosto | Sisältö | Tila |
 | --- | --- | --- |
-| `header.png` | Stiga Pörssi -banneri | leveä, n. 2000 × 660 |
-| `sponsor-jersey53.png` | Jersey53-mainos | leveä, n. 1846 × 828 |
-| `sponsor-ainto.png` | Ainto-mainos | pysty, n. 1024 × 1536 |
+| `header.webp` | Stiga Pörssi -banneri | valmis |
+| `sponsor-jersey53.webp` | Jersey53-mainos, leveä | puuttuu |
+| `sponsor-ainto.webp` | Ainto-mainos, pysty | puuttuu |
 
-Kunnes tiedostot on lisätty, sivu näyttää niiden paikalla katkoviivaisen
+Nimet on kiinnitetty koodiin, joten oikea tiedosto vain korvaa paikkamerkin.
+Kunnes tiedosto on lisätty, sivu näyttää sen paikalla katkoviivaisen
 paikkamerkin eikä rikkinäistä kuvaa.
