@@ -22,6 +22,15 @@ export interface SyncResult {
 /** Montako päivää taaksepäin illan ajo tarkistaa. */
 const NIGHTLY_WINDOW_DAYS = 3;
 
+/**
+ * Montako päivää eteenpäin otteluohjelma tallennetaan.
+ *
+ * Sivu näyttää päivän ottelut, joten tulevat ottelut on oltava kannassa jo
+ * ennen kuin ne pelataan. Ilman tätä aamulla avattu sivu ei tietäisi illan
+ * otteluista, koska edellinen ajo oli eilen illalla.
+ */
+const SCHEDULE_AHEAD_DAYS = 10;
+
 /** D1 rajoittaa yhden batchin kokoa, joten kirjoitukset paloitellaan. */
 const BATCH_SIZE = 100;
 
@@ -56,7 +65,8 @@ export async function sync(
     // johon myöhään päättyneet ja jälkikäteen korjatut ottelut osuvat.
     const since =
       effectiveKind === 'backfill' ? '0000-00-00' : addDays(today, -NIGHTLY_WINDOW_DAYS);
-    const relevant = games.filter((g) => g.gameDate >= since && g.gameDate <= today);
+    const until = addDays(today, SCHEDULE_AHEAD_DAYS);
+    const relevant = games.filter((g) => g.gameDate >= since && g.gameDate <= until);
     const relevantIds = new Set(relevant.map((g) => g.id));
     const relevantStats = stats.filter((s) => relevantIds.has(s.gameId));
 
@@ -65,18 +75,38 @@ export async function sync(
       writes.push(
         db
           .prepare(
-            `INSERT INTO games (id, game_date, season, home_team, away_team, finished, synced_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?)
+            `INSERT INTO games (id, game_date, season, home_team, away_team, finished,
+                                start_time, started, home_goals, away_goals, synced_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
-               game_date = excluded.game_date,
-               finished  = excluded.finished,
-               synced_at = excluded.synced_at`,
+               game_date  = excluded.game_date,
+               finished   = excluded.finished,
+               start_time = excluded.start_time,
+               started    = excluded.started,
+               home_goals = excluded.home_goals,
+               away_goals = excluded.away_goals,
+               synced_at  = excluded.synced_at`,
           )
-          .bind(game.id, game.gameDate, season, game.homeTeam, game.awayTeam, game.finished ? 1 : 0, startedAt),
+          .bind(
+            game.id,
+            game.gameDate,
+            season,
+            game.homeTeam,
+            game.awayTeam,
+            game.finished ? 1 : 0,
+            game.startTime,
+            game.started ? 1 : 0,
+            game.homeGoals,
+            game.awayGoals,
+            startedAt,
+          ),
       );
-      // Ottelun rivit kirjoitetaan aina uusiksi, jotta jälkikäteen korjattu
-      // maalikirjaus ei jätä vanhaa riviä roikkumaan.
-      writes.push(db.prepare('DELETE FROM player_game_stats WHERE game_id = ?').bind(game.id));
+      // Pelatun ottelun rivit kirjoitetaan aina uusiksi, jotta jälkikäteen
+      // korjattu maalikirjaus ei jätä vanhaa riviä roikkumaan. Pelaamattomalle
+      // ottelulle ei ole rivejä eikä niitä siksi poisteta.
+      if (game.finished) {
+        writes.push(db.prepare('DELETE FROM player_game_stats WHERE game_id = ?').bind(game.id));
+      }
     }
     for (const stat of relevantStats) {
       writes.push(

@@ -55,6 +55,7 @@ function renderAll() {
   renderChart();
   renderChartTable();
   renderTeams();
+  renderSchedule();
   renderUpdated();
 }
 
@@ -362,7 +363,10 @@ function wireHover(host, geo) {
 
 function renderChartTable() {
   const teams = state.data.teams;
-  const dates = [...new Set(teams.flatMap((t) => t.series.map((p) => p.date)))].sort();
+  // Kauden alkua edeltävä nollapiste on kuvaajan lähtökohta, ei havainto.
+  const dates = [...new Set(teams.flatMap((t) => t.series.map((p) => p.date)))]
+    .sort()
+    .filter((date) => date >= state.data.seasonStart);
   const head = teams.map((t) => `<th scope="col">${escapeHtml(t.name)}</th>`).join('');
   const rows = dates
     .map(
@@ -490,6 +494,44 @@ function roleLabel(player) {
     short = `V-${abbr}`;
   }
   return `<span class="role-long">${long}</span><span class="role-short" title="${long}">${short}</span>`;
+}
+
+/* ---------------- Päivän ottelut ---------------- */
+
+function renderSchedule() {
+  const panel = document.getElementById('ottelut-panel');
+  const schedule = state.data.schedule;
+  if (!schedule || schedule.games.length === 0) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+
+  document.getElementById('ottelut-paiva').textContent = schedule.isToday
+    ? `Tänään ${longDate(schedule.date)}`
+    : `Seuraava pelipäivä ${weekday(schedule.date)} ${longDate(schedule.date)}`;
+
+  document.getElementById('ottelut').innerHTML = schedule.games
+    .map((game) => {
+      const live = game.started && !game.finished;
+      const score =
+        game.homeGoals === null || game.awayGoals === null || !game.started
+          ? ''
+          : `${game.homeGoals}–${game.awayGoals}`;
+      return `<li class="game ${game.started ? '' : 'game--upcoming'}">
+        <span class="game__time">${escapeHtml(game.time)}</span>
+        <span class="game__teams">${escapeHtml(game.homeTeam)}<span class="game__vs">–</span>${escapeHtml(game.awayTeam)}</span>
+        ${live ? '<span class="game__live">Käynnissä</span>' : `<span class="game__score">${score}</span>`}
+      </li>`;
+    })
+    .join('');
+}
+
+const WEEKDAYS = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la'];
+
+function weekday(date) {
+  const [year, month, day] = date.split('-').map(Number);
+  return WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
 }
 
 /* ---------------- Vaihto ---------------- */

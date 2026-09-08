@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, helsinkiDate, swapEffectiveDate } from '../src/time';
+import { addDays, helsinkiDate, helsinkiTime, swapEffectiveDate } from '../src/time';
 
 describe('helsinkiDate', () => {
   it('käyttää Suomen paikallista päivää eikä UTC-päivää', () => {
@@ -39,5 +39,19 @@ describe('swapEffectiveDate', () => {
     // Talvella 13:59 Suomen aikaa = 11:59 UTC
     expect(swapEffectiveDate(new Date('2026-12-15T11:59:00Z'))).toBe('2026-12-15');
     expect(swapEffectiveDate(new Date('2026-12-15T12:00:00Z'))).toBe('2026-12-16');
+  });
+});
+
+describe('helsinkiTime', () => {
+  it('muuntaa UTC-ajan Suomen kellonajaksi kesällä', () => {
+    expect(helsinkiTime(new Date('2026-09-08T15:30:00Z'))).toBe('18:30');
+  });
+
+  it('toimii myös talviajalla', () => {
+    expect(helsinkiTime(new Date('2026-12-15T15:30:00Z'))).toBe('17:30');
+  });
+
+  it('näyttää keskiyön muodossa 00:00', () => {
+    expect(helsinkiTime(new Date('2026-09-08T21:00:00Z'))).toBe('00:00');
   });
 });

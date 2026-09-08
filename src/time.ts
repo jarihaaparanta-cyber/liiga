@@ -50,6 +50,12 @@ export function helsinkiDate(at: Date): string {
   return `${year}-${pad(month)}-${pad(day)}`;
 }
 
+/** Kellonaika Suomen aikaa muodossa HH:MM. */
+export function helsinkiTime(at: Date): string {
+  const { hour, minute } = helsinkiParts(at);
+  return `${pad(hour)}:${pad(minute)}`;
+}
+
 /** Lisää päivämäärään päiviä. Toimii pelkillä kalenteripäivillä. */
 export function addDays(date: string, days: number): string {
   const [y, m, d] = date.split('-').map(Number);

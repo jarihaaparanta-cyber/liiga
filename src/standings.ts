@@ -14,7 +14,7 @@ import {
   type RosterEntry,
   type Swap,
 } from './scoring';
-import { addDays } from './time';
+import { addDays, helsinkiDate, helsinkiTime } from './time';
 
 export interface TeamRow {
   id: string;
@@ -59,16 +59,37 @@ export interface StandingsTeam {
   series: { date: string; points: number }[];
 }
 
+/** Yksi ottelu otteluohjelmassa. */
+export interface ScheduleGame {
+  /** Alkamisaika Suomen aikaa, muodossa HH:MM. */
+  time: string;
+  homeTeam: string;
+  awayTeam: string;
+  started: boolean;
+  finished: boolean;
+  homeGoals: number | null;
+  awayGoals: number | null;
+}
+
+export interface Schedule {
+  date: string;
+  isToday: boolean;
+  games: ScheduleGame[];
+}
+
 export interface Standings {
   seasonStart: string;
   updatedAt: string | null;
   warning: string | null;
+  /** Päivän ottelut, tai seuraava pelipäivä jos tänään ei pelata. */
+  schedule: Schedule | null;
   teams: StandingsTeam[];
 }
 
 export async function loadStandings(
   db: D1Database,
   seasonStart: string,
+  now: Date = new Date(),
 ): Promise<Standings> {
   const [teams, roster, swaps, players, stats, lastSync] = await Promise.all([
     all<TeamRow & { sort_order: number; has_pin: number }>(
@@ -95,6 +116,8 @@ export async function loadStandings(
     db.prepare('SELECT finished_at, message FROM sync_log WHERE ok = 1 ORDER BY id DESC LIMIT 1')
       .first<{ finished_at: string; message: string }>(),
   ]);
+
+  const schedule = await loadSchedule(db, helsinkiDate(now));
 
   const nameById = new Map(players.map((p) => [p.id, p]));
   const rosterIds = [...new Set(roster.map((r) => r.player_id))];
@@ -184,7 +207,52 @@ export async function loadStandings(
     seasonStart,
     updatedAt: lastSync?.finished_at ?? null,
     warning: mismatch,
+    schedule,
     teams: result,
+  };
+}
+
+/**
+ * Päivän ottelut, tai seuraava pelipäivä jos tänään ei pelata.
+ *
+ * Haetaan ensin lähin pelipäivä tästä päivästä eteenpäin ja sen jälkeen sen
+ * päivän ottelut, jottei koko otteluohjelmaa tarvitse siirtää.
+ */
+async function loadSchedule(db: D1Database, today: string): Promise<Schedule | null> {
+  const next = await db
+    .prepare('SELECT MIN(game_date) AS date FROM games WHERE game_date >= ?')
+    .bind(today)
+    .first<{ date: string | null }>();
+  const date = next?.date;
+  if (!date) return null;
+
+  const rows = await all<{
+    start_time: string | null;
+    home_team: string;
+    away_team: string;
+    started: number;
+    finished: number;
+    home_goals: number | null;
+    away_goals: number | null;
+  }>(
+    db,
+    `SELECT start_time, home_team, away_team, started, finished, home_goals, away_goals
+       FROM games WHERE game_date = ? ORDER BY start_time, home_team`,
+    [date],
+  );
+
+  return {
+    date,
+    isToday: date === today,
+    games: rows.map((r) => ({
+      time: r.start_time ? helsinkiTime(new Date(r.start_time)) : '',
+      homeTeam: r.home_team,
+      awayTeam: r.away_team,
+      started: r.started === 1,
+      finished: r.finished === 1,
+      homeGoals: r.home_goals,
+      awayGoals: r.away_goals,
+    })),
   };
 }
 

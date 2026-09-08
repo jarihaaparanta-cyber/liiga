@@ -19,12 +19,14 @@ export interface GoalEvent {
 
 export interface LiigaTeam {
   teamName: string;
+  goals?: number;
   goalEvents: GoalEvent[] | null;
 }
 
 export interface LiigaGame {
   id: number;
   start: string;
+  started?: boolean;
   ended: boolean;
   serie: string;
   homeTeam: LiigaTeam;
@@ -46,9 +48,14 @@ export interface SummedPlayer {
 export interface GameRow {
   id: number;
   gameDate: string;
+  /** Alkuaika UTC:nä sellaisenaan; muunnetaan Suomen aikaan näytettäessä. */
+  startTime: string;
   homeTeam: string;
   awayTeam: string;
+  started: boolean;
   finished: boolean;
+  homeGoals: number | null;
+  awayGoals: number | null;
 }
 
 /** Yhden pelaajan suoritus yhdessä ottelussa. */
@@ -105,9 +112,13 @@ export function extractStats(games: LiigaGame[]): { games: GameRow[]; stats: Sta
     gameRows.push({
       id: game.id,
       gameDate,
+      startTime: game.start,
       homeTeam: game.homeTeam.teamName,
       awayTeam: game.awayTeam.teamName,
+      started: Boolean(game.started),
       finished: Boolean(game.ended),
+      homeGoals: game.homeTeam.goals ?? null,
+      awayGoals: game.awayTeam.goals ?? null,
     });
     if (!game.ended) continue;
 

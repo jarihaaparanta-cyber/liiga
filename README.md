@@ -106,6 +106,7 @@ npm test
 | `src/time.ts` | Suomen aikavyöhykkeen käsittely ja vaihdon takaraja. |
 | `src/index.ts` | Workerin reitit ja cron-käsittelijä. |
 | `migrations/` | D1-skeema. |
+| `src/standings.ts` | Tilanteen ja otteluohjelman kokoaminen kannasta. |
 | `data/rosters.json` | Kauden lähtökokoonpanot. |
 | `public/` | Selainkäyttöliittymä. |
 | `scripts/` | Kertaluontoiset apuskriptit: pelaajahaku, tunnussanat, kuvien pakkaus. |
