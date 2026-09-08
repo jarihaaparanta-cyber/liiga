@@ -440,20 +440,70 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 
 .game {
-  display: grid;
-  grid-template-columns: 3.2rem 1fr auto;
-  align-items: center;
-  gap: .6rem;
-  padding: .55rem .75rem;
   background: var(--surface-sunken);
   border: 1px solid var(--line);
   border-radius: 8px;
   font-size: .875rem;
 }
 
-.game__time { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+/*
+ * Sama ruudukko sekä tavalliselle riville että avattavan otsikolle.
+ * Otsikossa on vaihteleva määrä elementtejä (tulos, mahdollinen
+ * käynnissä-merkki, avausnuoli), joten loput sarakkeet syntyvät
+ * automaattisesti eivätkä valu omalle rivilleen.
+ */
+.game > div,
+.game:not(.game--open),
+.game__summary {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
+  align-items: center;
+  gap: .6rem;
+  padding: .55rem .75rem;
+}
+.game--open .game__summary { cursor: pointer; list-style: none; }
+.game--open .game__summary::-webkit-details-marker { display: none; }
+.game--open .game__summary::after {
+  content: '▾';
+  color: var(--ink-muted);
+  font-size: .75em;
+  line-height: 1;
+}
+.game--open[open] .game__summary::after { content: '▴'; }
+.game--open .game__summary:hover { background: rgb(255 255 255 / .03); }
+
+/* Maalilista */
+.goals {
+  list-style: none; margin: 0; padding: .1rem .75rem .6rem;
+  display: grid; gap: .3rem;
+  border-top: 1px solid var(--line);
+}
+.goal {
+  display: grid;
+  grid-template-columns: 3.2rem 3rem 1fr auto;
+  align-items: baseline;
+  gap: .6rem;
+  font-size: .8125rem;
+  padding-top: .3rem;
+}
+.goal__time { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.goal__team { color: var(--ink-secondary); font-size: .75rem; }
+.goal__who { overflow-wrap: anywhere; }
+.goal__assists { color: var(--ink-muted); }
+.goal__score { color: var(--ink-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.goal__type {
+  display: inline-block; margin-left: .35rem;
+  font-size: .625rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--ink-muted);
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  padding: 0 .25rem;
+}
+
 .game__teams { overflow-wrap: anywhere; }
 .game__vs { color: var(--ink-muted); padding: 0 .15rem; }
+.game__time { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 
 .game__score {
   font-weight: 700; font-variant-numeric: tabular-nums;
@@ -506,6 +556,14 @@ tbody tr:last-child td { border-bottom: 0; }
  * leveydet itse ja tiivistetään tekstiä.
  */
 @media (max-width: 560px) {
+  /* Kapealla näytöllä joukkue omalle rivilleen tekijän yläpuolelle, jottei
+     tieto katoa mutta rivi ei myöskään leviä. */
+  .goal { grid-template-columns: 2.8rem 1fr auto; row-gap: 0; }
+  .goal__time  { grid-row: 1 / span 2; }
+  .goal__team  { grid-column: 2; grid-row: 1; font-size: .6875rem; }
+  .goal__who   { grid-column: 2; grid-row: 2; }
+  .goal__score { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
+
   .team table { table-layout: auto; font-size: .75rem; }
   .team col { width: auto; }
   .col-role { font-size: .625rem; white-space: nowrap; }

@@ -16,7 +16,7 @@ import {
   type RosterEntry,
   type Swap,
 } from './scoring';
-import { fetchGames, statsFromGame, type LiigaGame } from './liiga';
+import { fetchGames, goalsFromGame, statsFromGame, type LiigaGame } from './liiga';
 import { addDays, helsinkiDate, helsinkiTime } from './time';
 
 export interface TeamRow {
@@ -69,6 +69,20 @@ export interface StandingsTeam {
 }
 
 /** Yksi ottelu otteluohjelmassa. */
+/** Yksi maali ottelutilanteessa. */
+export interface ScheduleGoal {
+  /** Peliaika muodossa MM:SS ottelun alusta. */
+  time: string;
+  period: number | null;
+  team: string;
+  scorer: string;
+  assists: string[];
+  /** Tilanne maalin jälkeen, esim. "1–2". */
+  score: string;
+  /** Maalin tyypit, esim. ylivoima. */
+  types: string[];
+}
+
 export interface ScheduleGame {
   /** Alkamisaika Suomen aikaa, muodossa HH:MM. */
   time: string;
@@ -78,6 +92,7 @@ export interface ScheduleGame {
   finished: boolean;
   homeGoals: number | null;
   awayGoals: number | null;
+  goals: ScheduleGoal[];
 }
 
 export interface Schedule {
@@ -140,10 +155,7 @@ export async function loadStandings(
   ]);
 
   const today = helsinkiDate(now);
-  const [schedule, liveData] = await Promise.all([
-    loadSchedule(db, today),
-    loadLive(db, season, today, now),
-  ]);
+  const liveData = await loadLive(db, season, today, now);
 
   // Live-suoritukset lisätään tietokannan rivien perään. Ne koskevat vain
   // tätä päivää eivätkä ole vielä tietokannassa, joten päällekkäisyyttä ei
@@ -165,6 +177,7 @@ export async function loadStandings(
 
   const nameById = new Map(players.map((p) => [p.id, p]));
   const streaks = await loadStreaks(db, players, stats, liveData?.endedGames ?? [], today);
+  const schedule = await loadSchedule(db, today, liveData?.liveGames ?? [], nameById);
   const rosterIds = [...new Set(roster.map((r) => r.player_id))];
 
   // Otteluiden määrä aikavälille saadaan tilannekuvien erotuksena. Rajapäiviä
@@ -351,6 +364,7 @@ async function loadLive(
   active: boolean;
   games: number;
   endedGames: { id: number; homeTeam: string; awayTeam: string; date: string }[];
+  liveGames: LiigaGame[];
 } | null> {
   // Haetaan vain jos päivän ottelu on jo ehtinyt alkaa eikä sitä ole vielä
   // merkitty päättyneeksi. Muuten sivu hakisi liiga.fi:tä turhaan koko päivän.
@@ -399,6 +413,7 @@ async function loadLive(
         awayTeam: game.awayTeam.teamName,
         date: today,
       })),
+    liveGames: relevant,
   };
 }
 
@@ -408,7 +423,12 @@ async function loadLive(
  * Haetaan ensin lähin pelipäivä tästä päivästä eteenpäin ja sen jälkeen sen
  * päivän ottelut, jottei koko otteluohjelmaa tarvitse siirtää.
  */
-async function loadSchedule(db: D1Database, today: string): Promise<Schedule | null> {
+async function loadSchedule(
+  db: D1Database,
+  today: string,
+  liveGames: LiigaGame[],
+  nameById: Map<number, { first_name: string; last_name: string }>,
+): Promise<Schedule | null> {
   const next = await db
     .prepare('SELECT MIN(game_date) AS date FROM games WHERE game_date >= ?')
     .bind(today)
@@ -417,6 +437,7 @@ async function loadSchedule(db: D1Database, today: string): Promise<Schedule | n
   if (!date) return null;
 
   const rows = await all<{
+    id: number;
     start_time: string | null;
     home_team: string;
     away_team: string;
@@ -426,24 +447,95 @@ async function loadSchedule(db: D1Database, today: string): Promise<Schedule | n
     away_goals: number | null;
   }>(
     db,
-    `SELECT start_time, home_team, away_team, started, finished, home_goals, away_goals
+    `SELECT id, start_time, home_team, away_team, started, finished, home_goals, away_goals
        FROM games WHERE game_date = ? ORDER BY start_time, home_team`,
     [date],
   );
 
+  // Tallennetut maalit tälle päivälle.
+  const stored = await all<{
+    game_id: number;
+    game_time: number | null;
+    period: number | null;
+    team: string;
+    scorer_id: number;
+    assist_ids: string | null;
+    home_score: number | null;
+    away_score: number | null;
+    goal_types: string | null;
+  }>(
+    db,
+    `SELECT e.game_id, e.game_time, e.period, e.team, e.scorer_id, e.assist_ids,
+            e.home_score, e.away_score, e.goal_types
+       FROM goal_events e
+       JOIN games g ON g.id = e.game_id
+      WHERE g.game_date = ?
+      ORDER BY e.game_id, e.game_time`,
+    [date],
+  );
+
+  const byGame = new Map<number, ScheduleGoal[]>();
+  const name = (id: number) => {
+    const p = nameById.get(id);
+    return p ? `${p.first_name} ${p.last_name}` : `#${id}`;
+  };
+  for (const row of stored) {
+    const list = byGame.get(row.game_id) ?? [];
+    list.push({
+      time: gameClock(row.game_time),
+      period: row.period,
+      team: row.team,
+      scorer: name(row.scorer_id),
+      assists: (row.assist_ids ?? '').split(',').filter(Boolean).map((id) => name(Number(id))),
+      score: `${row.home_score ?? ''}–${row.away_score ?? ''}`,
+      types: (row.goal_types ?? '').split(',').filter(Boolean),
+    });
+    byGame.set(row.game_id, list);
+  }
+
+  // Kesken olevat ja vasta päättyneet ottelut eivät ole vielä tietokannassa,
+  // joten niiden maalit tulevat suoraan liiga.fi:n hausta.
+  const live = new Map(liveGames.map((game) => [game.id, game]));
+  for (const game of liveGames) {
+    byGame.set(
+      game.id,
+      goalsFromGame(game).map((goal) => ({
+        time: gameClock(goal.gameTime),
+        period: goal.period,
+        team: goal.team,
+        scorer: name(goal.scorerId),
+        assists: goal.assistIds.map(name),
+        score: `${goal.homeScore ?? ''}–${goal.awayScore ?? ''}`,
+        types: goal.goalTypes,
+      })),
+    );
+  }
+
   return {
     date,
     isToday: date === today,
-    games: rows.map((r) => ({
-      time: r.start_time ? helsinkiTime(new Date(r.start_time)) : '',
-      homeTeam: r.home_team,
-      awayTeam: r.away_team,
-      started: r.started === 1,
-      finished: r.finished === 1,
-      homeGoals: r.home_goals,
-      awayGoals: r.away_goals,
-    })),
+    games: rows.map((r) => {
+      const liveGame = live.get(r.id);
+      return {
+        time: r.start_time ? helsinkiTime(new Date(r.start_time)) : '',
+        homeTeam: r.home_team,
+        awayTeam: r.away_team,
+        started: liveGame ? Boolean(liveGame.started) : r.started === 1,
+        finished: liveGame ? Boolean(liveGame.ended) : r.finished === 1,
+        homeGoals: liveGame ? (liveGame.homeTeam.goals ?? null) : r.home_goals,
+        awayGoals: liveGame ? (liveGame.awayTeam.goals ?? null) : r.away_goals,
+        goals: byGame.get(r.id) ?? [],
+      };
+    }),
   };
+}
+
+/** Peliaika sekunneista muotoon MM:SS. */
+function gameClock(seconds: number | null): string {
+  if (seconds === null) return '';
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${minutes}:${String(rest).padStart(2, '0')}`;
 }
 
 /**

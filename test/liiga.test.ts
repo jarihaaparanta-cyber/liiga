@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   countsAsScoring,
   extractStats,
+  goalsFromGame,
   statsFromGame,
   toPosition,
   type LiigaGame,
@@ -174,5 +175,32 @@ describe('statsFromGame', () => {
     } as unknown as LiigaGame;
 
     expect(statsFromGame(kesken, '2026-09-08')).toEqual([]);
+  });
+});
+
+describe('goalsFromGame', () => {
+  const peli = games.find((g) => g.id === 2701280)!;
+
+  it('jättää voittolaukauksen pois myös tapahtumalistalta', () => {
+    const maalit = goalsFromGame(peli);
+    // Ottelussa oli 9 maalitapahtumaa, joista yksi voittolaukaus.
+    expect(maalit).toHaveLength(8);
+  });
+
+  it('palauttaa maalit peliajan mukaisessa järjestyksessä', () => {
+    const ajat = goalsFromGame(peli).map((g) => g.gameTime ?? 0);
+    expect(ajat).toEqual([...ajat].sort((a, b) => a - b));
+  });
+
+  it('antaa kotijoukkueen ja vierasjoukkueen maaleille eri tunnisteet', () => {
+    const ids = goalsFromGame(peli).map((g) => g.eventId);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('poimii maalintekijän ja syöttäjät', () => {
+    const maali = goalsFromGame(peli).find((g) => g.assistIds.length > 0)!;
+    expect(maali.scorerId).toBeGreaterThan(0);
+    expect(maali.assistIds.length).toBeGreaterThan(0);
+    expect(maali.team).toBeTruthy();
   });
 });

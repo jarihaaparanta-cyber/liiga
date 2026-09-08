@@ -581,20 +581,71 @@ function renderSchedule() {
     ? `Tänään ${longDate(schedule.date)}`
     : `Seuraava pelipäivä ${weekday(schedule.date)} ${longDate(schedule.date)}`;
 
-  document.getElementById('ottelut').innerHTML = schedule.games
-    .map((game) => {
-      const live = game.started && !game.finished;
-      const score =
-        game.homeGoals === null || game.awayGoals === null || !game.started
-          ? ''
-          : `${game.homeGoals}–${game.awayGoals}`;
-      return `<li class="game ${game.started ? '' : 'game--upcoming'}">
-        <span class="game__time">${escapeHtml(game.time)}</span>
-        <span class="game__teams">${escapeHtml(game.homeTeam)}<span class="game__vs">–</span>${escapeHtml(game.awayTeam)}</span>
-        ${live ? '<span class="game__live">Käynnissä</span>' : `<span class="game__score">${score}</span>`}
-      </li>`;
-    })
+  document.getElementById('ottelut').innerHTML = schedule.games.map(gameRow).join('');
+}
+
+/**
+ * Yksi ottelu. Maalit näytetään avattavassa osiossa, ja käynnissä oleva
+ * ottelu avataan valmiiksi. Maaliton ottelu on tavallinen rivi, jottei
+ * tyhjää avausta jäisi roikkumaan.
+ */
+function gameRow(game) {
+  const live = game.started && !game.finished;
+  const score =
+    game.homeGoals === null || game.awayGoals === null || !game.started
+      ? ''
+      : `${game.homeGoals}–${game.awayGoals}`;
+
+  const head =
+    `<span class="game__time">${escapeHtml(game.time)}</span>` +
+    `<span class="game__teams">${escapeHtml(game.homeTeam)}` +
+    `<span class="game__vs">–</span>${escapeHtml(game.awayTeam)}</span>` +
+    (live
+      ? `<span class="game__live">Käynnissä</span><span class="game__score">${score}</span>`
+      : `<span class="game__score">${score}</span>`);
+
+  const classes = `game ${game.started ? '' : 'game--upcoming'}`;
+
+  if (game.goals.length === 0) {
+    return `<li><div class="${classes}">${head}</div></li>`;
+  }
+
+  return `<li>
+    <details class="${classes} game--open" ${live ? 'open' : ''}>
+      <summary class="game__summary">${head}</summary>
+      <ol class="goals">${game.goals.map(goalRow).join('')}</ol>
+    </details>
+  </li>`;
+}
+
+/** Maalin tyyppikoodien selitykset. Tuntematon koodi näytetään sellaisenaan. */
+const GOAL_TYPES = {
+  YV: 'Ylivoimamaali',
+  YV2: 'Kahden miehen ylivoima',
+  AV: 'Alivoimamaali',
+  TM: 'Tyhjään maaliin',
+  IM: 'Itsemaali',
+  RL: 'Rangaistuslaukaus',
+};
+
+function goalRow(goal) {
+  const assists = goal.assists.length
+    ? ` <span class="goal__assists">(${goal.assists.map(escapeHtml).join(', ')})</span>`
+    : '';
+  const types = goal.types
+    .map(
+      (type) =>
+        `<span class="goal__type"${GOAL_TYPES[type] ? ` title="${GOAL_TYPES[type]}"` : ''}>` +
+        `${escapeHtml(type)}</span>`,
+    )
     .join('');
+
+  return `<li class="goal">
+    <span class="goal__time">${escapeHtml(goal.time)}</span>
+    <span class="goal__team">${escapeHtml(goal.team)}</span>
+    <span class="goal__who"><strong>${escapeHtml(goal.scorer)}</strong>${assists}${types}</span>
+    <span class="goal__score">${escapeHtml(goal.score)}</span>
+  </li>`;
 }
 
 const WEEKDAYS = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la'];

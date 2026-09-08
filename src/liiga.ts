@@ -15,6 +15,11 @@ export interface GoalEvent {
   assistantPlayerIds: number[] | null;
   goalTypes: string[] | null;
   goalsSoFarInSeason?: number;
+  eventId?: number;
+  gameTime?: number;
+  period?: number;
+  homeTeamScore?: number;
+  awayTeamScore?: number;
 }
 
 export interface LiigaTeam {
@@ -126,6 +131,55 @@ export function extractStats(games: LiigaGame[]): { games: GameRow[]; stats: Sta
   }
 
   return { games: gameRows, stats };
+}
+
+/** Yksi maali tietokantaan tallennettavassa muodossa. */
+export interface GoalRow {
+  gameId: number;
+  eventId: number;
+  gameTime: number | null;
+  period: number | null;
+  team: string;
+  scorerId: number;
+  assistIds: number[];
+  homeScore: number | null;
+  awayScore: number | null;
+  goalTypes: string[];
+}
+
+/**
+ * Ottelun maalit tapahtumina aikajärjestyksessä.
+ *
+ * Mukaan tulevat vain pisteitä kerryttävät maalit, samalla säännöllä kuin
+ * pistelaskennassa: voittolaukaus ja maaliton rangaistuslaukaus jäävät pois.
+ */
+export function goalsFromGame(game: LiigaGame): GoalRow[] {
+  const rows: GoalRow[] = [];
+  for (const [side, team] of [
+    ['home', game.homeTeam],
+    ['away', game.awayTeam],
+  ] as const) {
+    let index = 0;
+    for (const event of team.goalEvents ?? []) {
+      index += 1;
+      if (!countsAsScoring(event)) continue;
+      rows.push({
+        gameId: game.id,
+        // Tapahtumatunniste on joukkuekohtainen, joten kotijoukkueen ja
+        // vierasjoukkueen numerot voivat törmätä. Erotellaan ne toisistaan.
+        eventId: (event.eventId ?? index) * 2 + (side === 'home' ? 0 : 1),
+        gameTime: event.gameTime ?? null,
+        period: event.period ?? null,
+        team: team.teamName,
+        scorerId: event.scorerPlayerId,
+        assistIds: event.assistantPlayerIds ?? [],
+        homeScore: event.homeTeamScore ?? null,
+        awayScore: event.awayTeamScore ?? null,
+        goalTypes: event.goalTypes ?? [],
+      });
+    }
+  }
+  return rows.sort((a, b) => (a.gameTime ?? 0) - (b.gameTime ?? 0));
 }
 
 /**

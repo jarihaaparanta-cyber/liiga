@@ -10,6 +10,7 @@ import {
   extractStats,
   fetchGames,
   fetchSummedStats,
+  goalsFromGame,
   toPosition,
   type LiigaGame,
   type StatRow,
@@ -113,6 +114,7 @@ export async function sync(
       // ottelulle ei ole rivejä eikä niitä siksi poisteta.
       if (game.finished) {
         writes.push(db.prepare('DELETE FROM player_game_stats WHERE game_id = ?').bind(game.id));
+        writes.push(db.prepare('DELETE FROM goal_events WHERE game_id = ?').bind(game.id));
       }
     }
     for (const stat of relevantStats) {
@@ -125,6 +127,34 @@ export async function sync(
           .bind(stat.playerId, stat.gameId, stat.gameDate, stat.goals, stat.assists),
       );
     }
+    // Maalitapahtumat ottelutilanteen näyttämistä varten.
+    const relevantSource = allGames.filter((g) => relevantIds.has(g.id) && g.ended);
+    for (const game of relevantSource) {
+      for (const goal of goalsFromGame(game)) {
+        writes.push(
+          db
+            .prepare(
+              `INSERT INTO goal_events
+                 (game_id, event_id, game_time, period, team, scorer_id, assist_ids,
+                  home_score, away_score, goal_types)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            )
+            .bind(
+              goal.gameId,
+              goal.eventId,
+              goal.gameTime,
+              goal.period,
+              goal.team,
+              goal.scorerId,
+              goal.assistIds.join(','),
+              goal.homeScore,
+              goal.awayScore,
+              goal.goalTypes.join(','),
+            ),
+        );
+      }
+    }
+
     await runBatched(db, writes);
 
     // Kausikoosteet: pelaajien perustiedot, päivän tilannekuva ja tarkistus.

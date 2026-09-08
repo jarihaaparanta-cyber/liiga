@@ -114,6 +114,22 @@ Kesken oleva ottelu ei vaikuta putkeen ennen kuin se päättyy. Muuten putki
 näyttäisi katkeavan heti avauspaikkojen jälkeen ja palaavan vasta
 ensimmäisestä pisteestä.
 
+## Ottelutilanne
+
+Päivän ottelurivin saa avattua, jolloin näkyvät maalit aikajärjestyksessä:
+peliaika, maalin tehnyt joukkue, maalintekijä, syöttäjät ja tilanne maalin
+jälkeen. Käynnissä oleva ottelu on avattu valmiiksi.
+
+Maalit tallennetaan omaan tauluunsa tapahtumina. Pistelaskennan
+`player_game_stats` ei riitä tähän, koska siitä ei näe maalien järjestystä,
+aikaa eikä sitä kumpi joukkue teki. Kesken olevan ja juuri päättyneen
+ottelun maalit tulevat suoraan liiga.fi:n hausta, koska niitä ei ole vielä
+tallennettu.
+
+Voittolaukaus ja maaliton rangaistuslaukaus jätetään pois samalla säännöllä
+kuin pistelaskennassa, jottei listalla näkyisi maaleja jotka eivät kerrytä
+kenellekään pisteitä.
+
 ## Vain tumma teema
 
 Banneri on tumma hallikuva. Vaalea teema näyttäisi siltä, että banneri on
