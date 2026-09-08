@@ -21,6 +21,9 @@ const ENCODING = {
   niksu: { dash: '10 4 2 4',    shape: 'diamond'  },
 };
 
+/** Vaaka-akselin merkintöjen määrä. */
+const TICK_COUNT = 4;
+
 const state = { data: null, view: 'chart', swap: null };
 
 init();
@@ -550,8 +553,6 @@ function handleMissingImages() {
     if (img.complete && img.naturalWidth === 0) replace(img);
   }
 }
-
-const TICK_COUNT = 4;
 
 /**
  * Yläraja joka on jaollinen akselimerkintöjen määrällä, jotta akselille
