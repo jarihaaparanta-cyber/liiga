@@ -37,11 +37,16 @@ Kärkimerkinnät siirretään tarvittaessa pystysuunnassa erilleen, jotta
 tasapisteissä olevien joukkueiden kasvot eivät mene päällekkäin. Ohut
 yhdysviiva kertoo mihin kohtaan käyrä oikeasti päättyy.
 
-## Porrasviiva, ei suora
+## Viisto viiva
 
-Pistesaldo ei kasva tasaisesti ottelupäivien välillä vaan hyppää
-ottelupäivänä. Suora viiva pisteiden välillä väittäisi, että pisteitä kertyi
-myös peliettömänä päivänä. Siksi käyrä on porras.
+Käyrä nousee viistosti ottelupäivästä toiseen. Tarkalleen ottaen pistesaldo
+hyppää vasta ottelupäivänä, joten porrasviiva olisi kirjaimellisesti
+täsmällisempi, mutta se näytti kulmikkaalta ja vaikeammin luettavalta.
+Viisto viiva valittiin luettavuuden vuoksi.
+
+Ottelupäivien kohdalla on merkkipiste, joten todelliset havainnot erottuvat
+interpoloidusta välistä. Viimeisestä ottelupäivästä oikeaan reunaan viiva
+jatkuu vaakasuorana, koska uusia pisteitä ei ole tullut.
 
 ## Vain tumma teema
 

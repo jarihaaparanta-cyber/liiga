@@ -1,0 +1,8 @@
+# Estä vanhentuneiden tiedostojen jääminen selaimen välimuistiin.
+#
+# Tiedostonimissä ei ole versiotunnistetta, joten selain voisi tarjoilla
+# vanhaa app.js:ää uuden index.html:n kanssa. no-cache ei estä välimuistia
+# vaan pakottaa tarkistamaan muuttuiko tiedosto; muuttumaton tiedosto
+# vastataan 304:llä eikä sitä ladata uudelleen.
+/*
+  Cache-Control: no-cache

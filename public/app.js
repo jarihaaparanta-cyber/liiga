@@ -193,17 +193,12 @@ function renderChart() {
   const headX = M.left + plotW + HEAD_R + 6;
   const series = ends
     .map(({ team, points, valueY, labelY }) => {
-      // Porrasviiva: pistesaldo pysyy samana ottelupäivien välillä ja
-      // nousee vasta ottelupäivänä. Suora viiva valehtelisi välipäivistä.
+      // Viisto viiva pisteestä pisteeseen. Viimeisestä ottelupäivästä
+      // oikeaan reunaan viiva jatkuu vaakasuorana, koska uusia pisteitä ei
+      // ole vielä tullut.
       let d = '';
       team.series.forEach((point, index) => {
-        const px = x(point.date);
-        const py = y(point.points);
-        if (index === 0) {
-          d += `M${px} ${py}`;
-        } else {
-          d += ` L${px} ${y(team.series[index - 1].points)} L${px} ${py}`;
-        }
+        d += `${index === 0 ? 'M' : ' L'}${x(point.date)} ${y(point.points)}`;
       });
       d += ` L${M.left + plotW} ${valueY}`;
 
