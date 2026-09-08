@@ -54,22 +54,36 @@ jobs:
         env:
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
 
+      # Ensimmäisellä julkaisulla wrangler voi kaatua workers.dev-osoitteen
+      # kytkemiseen ("This Worker does not exist on your account"), koska juuri
+      # luotu Worker ei ole vielä näkyvissä API:lle. Itse julkaisu on siinä
+      # vaiheessa jo mennyt läpi, joten yritetään kerran uudelleen.
       - name: Julkaise
-        id: julkaise
+        run: npx wrangler deploy || npx wrangler deploy
+
+      # Osoitetta ei poimita tulosteesta vaan kysytään API:lta. Tulosteen
+      # muotoiluun ei voi luottaa, ja epäonnistunut poiminta ohitti aiemmin
+      # koko datan haun huomaamatta.
+      - name: Selvitä osoite
+        id: osoite
         run: |
-          npx wrangler deploy | tee deploy.log
-          # Poimi osoite julkaisun tulosteesta seuraavaa vaihetta varten.
-          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Sivusto: ${url:-osoitetta ei löytynyt tulosteesta}"
+          set -o pipefail
+          sub=$(curl --fail --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.parse(s).result?.subdomain ?? ""))')
+          if [ -z "$sub" ]; then
+            echo "Tilille ei ole määritetty workers.dev-aliosoitetta." >&2
+            exit 1
+          fi
+          echo "url=https://liigaporssi.$sub.workers.dev" >> "$GITHUB_OUTPUT"
 
       - name: Hae kauden tiedot
-        if: steps.julkaise.outputs.url != ''
         run: |
           # Tyhjä tietokanta täytetään koko kaudelta; myöhemmillä ajoilla
           # tämä on kevyt päivitys.
-          curl --fail --silent --show-error --max-time 120 \
-            -X POST "${{ steps.julkaise.outputs.url }}/api/sync?kind=manual" \
+          curl --fail --silent --show-error --max-time 180 \
+            -X POST "${{ steps.osoite.outputs.url }}/api/sync?kind=manual" \
             -H "Authorization: Bearer $ADMIN_TOKEN"
         env:
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
@@ -79,5 +93,5 @@ jobs:
           {
             echo "### Sivusto julkaistu"
             echo ""
-            echo "${{ steps.julkaise.outputs.url || 'Osoite ei löytynyt tulosteesta — katso Julkaise-vaiheen loki.' }}"
+            echo "${{ steps.osoite.outputs.url }}"
           } >> "$GITHUB_STEP_SUMMARY"
