@@ -38,7 +38,14 @@ export async function sync(
   now: Date = new Date(),
 ): Promise<SyncResult> {
   const startedAt = new Date().toISOString();
-  const logId = await beginLog(db, startedAt, kind);
+
+  // Tyhjä tietokanta täytetään aina koko kaudelta riippumatta siitä mikä ajo
+  // sattuu olemaan ensimmäinen. Muuten käyttöönoton jälkeinen ensimmäinen
+  // iltapäivitys jättäisi jo pelatut kierrokset kokonaan puuttumaan.
+  const known = await db.prepare('SELECT COUNT(*) AS n FROM games').first<{ n: number }>();
+  const effectiveKind: SyncKind = (known?.n ?? 0) === 0 ? 'backfill' : kind;
+
+  const logId = await beginLog(db, startedAt, effectiveKind);
 
   try {
     const today = helsinkiDate(now);
@@ -47,7 +54,8 @@ export async function sync(
 
     // Takautuvassa täytössä käydään koko kausi; muuten vain tuore ikkuna,
     // johon myöhään päättyneet ja jälkikäteen korjatut ottelut osuvat.
-    const since = kind === 'backfill' ? '0000-00-00' : addDays(today, -NIGHTLY_WINDOW_DAYS);
+    const since =
+      effectiveKind === 'backfill' ? '0000-00-00' : addDays(today, -NIGHTLY_WINDOW_DAYS);
     const relevant = games.filter((g) => g.gameDate >= since && g.gameDate <= today);
     const relevantIds = new Set(relevant.map((g) => g.id));
     const relevantStats = stats.filter((s) => relevantIds.has(s.gameId));
@@ -118,7 +126,12 @@ export async function sync(
     const mismatches = verify(stats, summed);
 
     await finishLog(db, logId, true, relevant.length, describe(mismatches));
-    return { kind, gamesSynced: relevant.length, statRows: relevantStats.length, mismatches };
+    return {
+      kind: effectiveKind,
+      gamesSynced: relevant.length,
+      statRows: relevantStats.length,
+      mismatches,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await finishLog(db, logId, false, 0, message);

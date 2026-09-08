@@ -1,0 +1,54 @@
+# Asettaa joukkueen tunnusluvun, jolla vaihto vahvistetaan sivustolla.
+# Käynnistetään käsin GitHubin käyttöliittymästä: Actions > Aseta tunnusluku
+# > Run workflow. Toimii myös puhelimella.
+#
+# Tietokantaan tallentuu vain tiiviste, ei tunnuslukua itseään. Huomaa silti
+# että syöttämäsi luku jää GitHubin ajohistoriaan näkyviin niille, joilla on
+# pääsy tähän repositorioon.
+
+name: Aseta tunnusluku
+
+on:
+  workflow_dispatch:
+    inputs:
+      joukkue:
+        description: Joukkue
+        required: true
+        type: choice
+        options: [apa, jarde, borje, niksu]
+      tunnusluku:
+        description: Uusi tunnusluku (vähintään 4 merkkiä)
+        required: true
+        type: string
+
+jobs:
+  aseta:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Muodosta ja tallenna tiiviste
+        run: |
+          echo "::add-mask::$TUNNUSLUKU"
+          if [ "${#TUNNUSLUKU}" -lt 4 ]; then
+            echo "Tunnusluvun pitää olla vähintään 4 merkkiä." >&2
+            exit 1
+          fi
+          lause=$(node scripts/set-pin.mjs "$JOUKKUE" "$TUNNUSLUKU")
+          node scripts/ensure-d1.mjs
+          npx wrangler d1 execute liigaporssi --remote --command "$lause"
+          echo "Joukkueen $JOUKKUE tunnusluku asetettu." >> "$GITHUB_STEP_SUMMARY"
+        env:
+          JOUKKUE: ${{ inputs.joukkue }}
+          TUNNUSLUKU: ${{ inputs.tunnusluku }}
