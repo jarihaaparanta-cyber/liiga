@@ -33,6 +33,14 @@
 
 * { box-sizing: border-box; }
 
+/*
+ * hidden-attribuutin pitää voittaa luokkien display-arvot.
+ * Selaimen oma [hidden] { display: none } on tyylitiedoston sääntöjä
+ * heikompi, joten esimerkiksi display: inline-flex jättäisi piilotetun
+ * elementin näkyviin.
+ */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--surface);
