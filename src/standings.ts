@@ -113,6 +113,8 @@ export interface Live {
 
 export interface Standings {
   seasonStart: string;
+  /** Kuluva päivä Suomen aikaa, jotta tuleva vaihto osataan merkitä. */
+  today: string;
   updatedAt: string | null;
   warning: string | null;
   /** Päivän ottelut, tai seuraava pelipäivä jos tänään ei pelata. */
@@ -224,7 +226,7 @@ export async function loadStandings(
         effectiveDate: s.effective_date,
       }));
     const teamStats = statsByTeam.get(team.id) ?? [];
-    const tally = tallyTeam(team.id, entries, teamSwaps, teamStats, seasonStart);
+    const tally = tallyTeam(team.id, entries, teamSwaps, teamStats, seasonStart, today);
 
     const players: StandingsPlayer[] = tally.players.map((p) => {
       const info = nameById.get(p.playerId);
@@ -272,6 +274,7 @@ export async function loadStandings(
   const mismatch = lastSync?.message && lastSync.message !== 'ok' ? lastSync.message : null;
   return {
     seasonStart,
+    today,
     updatedAt: lastSync?.finished_at ?? null,
     warning: mismatch,
     schedule,

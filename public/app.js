@@ -453,10 +453,16 @@ function teamCard(team) {
   const locked = !team.hasPin;
   const log = team.swaps.length
     ? `<p class="team__swap-log">${team.swaps
-        .map(
-          (s) =>
-            `${escapeHtml(s.outName)} ${NBSP}→${NBSP} ${escapeHtml(s.inName)} (${longDate(s.effectiveDate)} alkaen)`,
-        )
+        .map((s) => {
+          // Klo 14 jälkeen tehty vaihto astuu voimaan vasta seuraavana
+          // päivänä, joten se merkitään tulevaksi.
+          const tuleva = s.effectiveDate > state.data.today;
+          return (
+            (tuleva ? '<strong class="swap-pending">Tulossa:</strong> ' : '') +
+            `${escapeHtml(s.outName)} ${NBSP}→${NBSP} ${escapeHtml(s.inName)} ` +
+            `(${longDate(s.effectiveDate)} alkaen)`
+          );
+        })
         .join('<br>')}</p>`
     : '';
 

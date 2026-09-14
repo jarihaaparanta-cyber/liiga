@@ -1,0 +1,56 @@
+# Tulostaa sivuston nykytilanteen: vaihdot, jäljellä olevat vaihdot ja
+# kokoonpanot. Tarkoitettu vianselvitykseen, ei muuta mitään.
+#
+# Actions > Tarkista tilanne > Run workflow.
+
+name: Tarkista tilanne
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tarkista:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+    steps:
+      - name: Selvitä osoite
+        id: osoite
+        run: |
+          set -o pipefail
+          sub=$(curl --fail --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.parse(s).result?.subdomain ?? ""))')
+          echo "url=https://liigaporssi.$sub.workers.dev" >> "$GITHUB_OUTPUT"
+
+      - name: Hae ja tulosta tilanne
+        run: |
+          curl --fail --silent --show-error --max-time 60 \
+            "${{ steps.osoite.outputs.url }}/api/standings" -o tilanne.json
+          node -e '
+            const d = require("./tilanne.json");
+            const out = [];
+            out.push("Kuluva päivä: " + d.today);
+            out.push("Päivitetty: " + d.updatedAt);
+            out.push("Varoitus: " + (d.warning ?? "ei"));
+            out.push("");
+            for (const t of d.teams) {
+              out.push("## " + t.name + "  (" + t.points + " p)");
+              out.push("  vaihtoja jäljellä: hyökkääjä " + t.swapsLeft.F + ", pakki " + t.swapsLeft.D);
+              out.push("  tehdyt vaihdot: " + (t.swaps.length
+                ? t.swaps.map(s => s.outName + " -> " + s.inName + " (" + s.effectiveDate + " alkaen)").join("; ")
+                : "ei yhtään"));
+              for (const p of t.players) {
+                out.push("    " + (p.active ? "MUKANA" : "ulkona") + " " +
+                  (p.isStarter ? "avaus" : "vara ") + " " + p.position + " " +
+                  p.name.padEnd(22) + " " + p.points + " p");
+              }
+              out.push("");
+            }
+            const text = out.join("\n");
+            console.log(text);
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, "```\n" + text + "\n```\n");
+          '

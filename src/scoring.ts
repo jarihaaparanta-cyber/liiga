@@ -51,7 +51,13 @@ export interface PlayerTally {
   position: Position;
   isStarter: boolean;
   slotOrder: number;
-  /** Onko pelaaja tällä hetkellä pisteitä kerryttävässä kokoonpanossa. */
+  /**
+   * Kerryttääkö pelaaja pisteitä tarkasteltavana päivänä.
+   *
+   * Huomaa ettei tämä ole sama kuin "onko vaihto tehty": klo 14 jälkeen
+   * tehty vaihto astuu voimaan vasta seuraavana päivänä, jolloin ulos
+   * jäävä pelaaja on yhä mukana kuluvan päivän otteluissa.
+   */
   active: boolean;
   /** Kokoonpanossa vietetyt aikavälit. Tyhjä = ei ole ollut mukana lainkaan. */
   intervals: Interval[];
@@ -135,6 +141,7 @@ export function tallyTeam(
   swaps: Swap[],
   stats: GameStat[],
   seasonStart: string,
+  today: string,
 ): TeamTally {
   const tallies = new Map<number, PlayerTally>();
   for (const entry of roster) {
@@ -144,7 +151,7 @@ export function tallyTeam(
       position: entry.position,
       isStarter: entry.isStarter,
       slotOrder: entry.slotOrder,
-      active: intervals.some((iv) => iv.to === null),
+      active: inIntervals(today, intervals),
       intervals,
       counted: { ...EMPTY },
       bench: { ...EMPTY },

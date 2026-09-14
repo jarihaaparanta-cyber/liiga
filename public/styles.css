@@ -377,6 +377,7 @@ tbody tr:last-child td { border-bottom: 0; }
 
 .team__foot { padding: .7rem .9rem; display: grid; gap: .5rem; }
 .team__swap-log { font-size: .75rem; color: var(--ink-muted); margin: 0; }
+.swap-pending { color: var(--warning); font-weight: 700; }
 
 /* ---------- Napit ---------- */
 

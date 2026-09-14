@@ -12,6 +12,8 @@ import {
 } from '../src/scoring';
 
 const SEASON_START = '2026-09-01';
+// Tarkastelupäivä testeissä: kaikkien vaihtojen voimaantulon jälkeen.
+const TODAY = '2026-12-01';
 
 // Apan kokoonpano: 3 hyökkääjää, 2 pakkia, varahyökkääjä ja varapakki.
 const roster: RosterEntry[] = [
@@ -59,7 +61,7 @@ describe('tallyTeam', () => {
       stat(4, '2026-09-10', 0, 2), // avaus, lasketaan
       stat(6, '2026-09-10', 3, 0), // varahyökkääjä penkillä, ei lasketa
     ];
-    const team = tallyTeam('apa', roster, [], stats, SEASON_START);
+    const team = tallyTeam('apa', roster, [], stats, SEASON_START, TODAY);
 
     expect(team.points).toBe(4);
     const sub = team.players.find((p) => p.playerId === 6)!;
@@ -79,7 +81,7 @@ describe('tallyTeam', () => {
       stat(6, '2026-10-14', 9, 9), // ennen vaihtoa: penkkipisteitä
       stat(6, '2026-10-15', 0, 2), // vaihtopäivästä: lasketaan
     ];
-    const team = tallyTeam('apa', roster, swaps, stats, SEASON_START);
+    const team = tallyTeam('apa', roster, swaps, stats, SEASON_START, TODAY);
 
     const out = team.players.find((p) => p.playerId === 1)!;
     const inn = team.players.find((p) => p.playerId === 6)!;
@@ -102,7 +104,7 @@ describe('tallyTeam', () => {
       stat(4, '2026-10-14', 0, 1),
       stat(4, '2026-10-16', 1, 0),
     ];
-    const team = tallyTeam('apa', roster, swaps, stats, SEASON_START);
+    const team = tallyTeam('apa', roster, swaps, stats, SEASON_START, TODAY);
     const out = team.players.find((p) => p.playerId === 4)!;
 
     expect(out.counted.scoringGames).toBe(2);
@@ -114,12 +116,12 @@ describe('tallyTeam', () => {
     const swaps: Swap[] = [
       { position: 'F', outPlayerId: 2, inPlayerId: 6, effectiveDate: '2026-10-15' },
     ];
-    const team = tallyTeam('apa', roster, swaps, [], SEASON_START);
+    const team = tallyTeam('apa', roster, swaps, [], SEASON_START, TODAY);
     expect(team.swapsLeft).toEqual({ F: 0, D: 1 });
   });
 
   it('ohittaa rivit joiden pelaaja ei kuulu joukkueeseen', () => {
-    const team = tallyTeam('apa', roster, [], [stat(999, '2026-09-10', 4, 4)], SEASON_START);
+    const team = tallyTeam('apa', roster, [], [stat(999, '2026-09-10', 4, 4)], SEASON_START, TODAY);
     expect(team.points).toBe(0);
   });
 });
@@ -199,5 +201,23 @@ describe('pointStreak ja flames', () => {
   it('rajaa liekit viiteen', () => {
     expect(flames(6)).toBe(5);
     expect(flames(12)).toBe(5);
+  });
+});
+
+describe('vaihdon voimaantulo', () => {
+  const swaps: Swap[] = [
+    { position: 'D', outPlayerId: 4, inPlayerId: 7, effectiveDate: '2026-10-15' },
+  ];
+
+  it('pitää ulos jäävän pelaajan mukana vielä vaihtoa edeltävänä päivänä', () => {
+    const team = tallyTeam('apa', roster, swaps, [], SEASON_START, '2026-10-14');
+    expect(team.players.find((p) => p.playerId === 4)!.active).toBe(true);
+    expect(team.players.find((p) => p.playerId === 7)!.active).toBe(false);
+  });
+
+  it('siirtää kokoonpanon vaihtopäivänä', () => {
+    const team = tallyTeam('apa', roster, swaps, [], SEASON_START, '2026-10-15');
+    expect(team.players.find((p) => p.playerId === 4)!.active).toBe(false);
+    expect(team.players.find((p) => p.playerId === 7)!.active).toBe(true);
   });
 });
