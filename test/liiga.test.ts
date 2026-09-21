@@ -7,7 +7,7 @@ import {
   toPosition,
   type LiigaGame,
 } from '../src/liiga';
-import { playersInLiveGames } from '../src/sync';
+import { playersInLiveGames, verify } from '../src/sync';
 import fixture from './fixtures/games.json';
 
 // Oikeaa liiga.fi-dataa kaudelta 2026-27: kolme päättynyttä ottelua ja yksi
@@ -202,5 +202,57 @@ describe('goalsFromGame', () => {
     expect(maali.scorerId).toBeGreaterThan(0);
     expect(maali.assistIds.length).toBeGreaterThan(0);
     expect(maali.team).toBeTruthy();
+  });
+});
+
+describe('verify', () => {
+  const today = '2026-09-21';
+  const stat = (playerId: number, gameDate: string, goals: number, assists: number) => ({
+    playerId,
+    gameId: Number(gameDate.replaceAll('-', '')),
+    gameDate,
+    goals,
+    assists,
+  });
+  const official = (playerId: number, goals: number, assists: number) => ({
+    playerId,
+    firstName: 'Testi',
+    lastName: `Pelaaja${playerId}`,
+    goals,
+    assists,
+  });
+
+  it('ei raportoi mitään kun luvut täsmäävät', () => {
+    const stats = [stat(1, '2026-09-01', 1, 0), stat(1, '2026-09-19', 0, 1)];
+    expect(verify(stats, [official(1, 1, 1)], new Set(), today)).toEqual([]);
+  });
+
+  it('vaikenee kun kooste laahaa tuoreiden otteluiden verran jäljessä', () => {
+    // Kooste ei vielä tunne 19.9. pelattua ottelua.
+    const stats = [stat(1, '2026-09-01', 1, 0), stat(1, '2026-09-19', 1, 1)];
+    expect(verify(stats, [official(1, 1, 0)], new Set(), today)).toEqual([]);
+  });
+
+  it('raportoi eron joka ei mahdu tuoreisiin otteluihin', () => {
+    // Tuoreessa ottelussa vain yksi maali, mutta ero on kaksi.
+    const stats = [stat(1, '2026-09-01', 1, 0), stat(1, '2026-09-19', 1, 0)];
+    expect(verify(stats, [official(1, 0, 0)], new Set(), today)).toHaveLength(1);
+  });
+
+  it('raportoi eron vanhoissa otteluissa', () => {
+    const stats = [stat(1, '2026-09-01', 2, 0)];
+    expect(verify(stats, [official(1, 1, 0)], new Set(), today)).toEqual([
+      'Testi Pelaaja1: virallinen 1+0, laskettu 2+0',
+    ]);
+  });
+
+  it('raportoi kun kooste on omaa laskentaa edellä', () => {
+    const stats = [stat(1, '2026-09-19', 1, 0)];
+    expect(verify(stats, [official(1, 2, 0)], new Set(), today)).toHaveLength(1);
+  });
+
+  it('ohittaa erikseen ohitettavat pelaajat', () => {
+    const stats = [stat(1, '2026-09-01', 2, 0)];
+    expect(verify(stats, [official(1, 1, 0)], new Set([1]), today)).toEqual([]);
   });
 });

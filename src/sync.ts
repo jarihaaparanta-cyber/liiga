@@ -39,6 +39,18 @@ const NIGHTLY_WINDOW_DAYS = 3;
  */
 const SCHEDULE_AHEAD_DAYS = 10;
 
+/**
+ * Montako päivää liiga.fi:n kausikoosteen sallitaan laahata otteluluettelon
+ * perässä.
+ *
+ * Rajapinnat tarjoillaan hyvin eri välimuisteilla: otteluluettelo uusitaan
+ * viiden sekunnin välein (`max-age=5`), mutta kausikooste on `max-age=150`
+ * ja `stale-if-error=86400`, joten CDN voi palauttaa siitä jopa vuorokausia
+ * vanhan kopion. Tuoreiden otteluiden pisteet puuttuvat silloin koosteesta,
+ * vaikka oma laskenta on oikein. Näin vanhaa eroa ei siis raportoida.
+ */
+const SUMMARY_LAG_DAYS = 7;
+
 /** D1 rajoittaa yhden batchin kokoa, joten kirjoitukset paloitellaan. */
 const BATCH_SIZE = 100;
 
@@ -200,10 +212,10 @@ export async function sync(
     }
     await runBatched(db, playerWrites);
 
-    // Käynnissä olevan ottelun pisteet näkyvät jo liiga.fi:n koosteessa,
-    // mutta omaan laskentaan ne tulevat vasta ottelun päätyttyä. Ilman tätä
-    // jokainen illan ottelu näyttäisi virheeltä.
-    const mismatches = verify(stats, summed, playersInLiveGames(allGames));
+    // Kooste ja otteluluettelo eivät ole koskaan aivan samassa hetkessä:
+    // kesken olevan ottelun pisteet ovat koosteessa ennen omaa laskentaa, ja
+    // vanhentunut kooste taas jäljessä. Molemmat rajataan pois vertailusta.
+    const mismatches = verify(stats, summed, playersInLiveGames(allGames), today);
 
     await finishLog(db, logId, true, relevant.length, describe(mismatches));
     return {
@@ -224,31 +236,65 @@ export async function sync(
  *
  * Näiden pitää täsmätä pelaaja pelaajalta; ero tarkoittaa että jokin
  * rajapinnassa on muuttunut. Vertailu tehdään aina koko kaudelta.
+ *
+ * Kaksi tunnettua eroa jätetään huomiotta, koska ne eivät kerro virheestä:
+ * kesken olevan ottelun pisteet (`skip`) näkyvät koosteessa ennen omaa
+ * laskentaa, ja vanhentunut kooste (`SUMMARY_LAG_DAYS`) laahaa omasta
+ * laskennasta jäljessä. Kumpikin korjaantuu itsestään.
  */
-function verify(
+export function verify(
   stats: StatRow[],
   summed: { playerId: number; firstName: string; lastName: string; goals: number; assists: number }[],
   skip: Set<number>,
+  today: string,
 ): string[] {
   const computed = new Map<number, { goals: number; assists: number }>();
+  const recent = new Map<number, { goals: number; assists: number }>();
+  const lagSince = addDays(today, -SUMMARY_LAG_DAYS);
   for (const s of stats) {
     const row = computed.get(s.playerId) ?? { goals: 0, assists: 0 };
     row.goals += s.goals;
     row.assists += s.assists;
     computed.set(s.playerId, row);
+
+    if (s.gameDate >= lagSince) {
+      const fresh = recent.get(s.playerId) ?? { goals: 0, assists: 0 };
+      fresh.goals += s.goals;
+      fresh.assists += s.assists;
+      recent.set(s.playerId, fresh);
+    }
   }
 
   const mismatches: string[] = [];
   for (const p of summed) {
     if (skip.has(p.playerId)) continue;
     const c = computed.get(p.playerId) ?? { goals: 0, assists: 0 };
-    if (c.goals !== p.goals || c.assists !== p.assists) {
-      mismatches.push(
-        `${p.firstName} ${p.lastName}: virallinen ${p.goals}+${p.assists}, laskettu ${c.goals}+${c.assists}`,
-      );
-    }
+    if (c.goals === p.goals && c.assists === p.assists) continue;
+    if (explainedByLag(c, p, recent.get(p.playerId))) continue;
+    mismatches.push(
+      `${p.firstName} ${p.lastName}: virallinen ${p.goals}+${p.assists}, laskettu ${c.goals}+${c.assists}`,
+    );
   }
   return mismatches;
+}
+
+/**
+ * Selittyykö ero sillä, että kooste on jäljessä?
+ *
+ * Kyllä, jos kooste jää omasta laskennasta jälkeen enintään sen verran kuin
+ * pelaaja on tehnyt pisteitä tuoreissa otteluissa. Vanhempien otteluiden ero
+ * ja koosteen edellä oleminen raportoidaan edelleen.
+ */
+function explainedByLag(
+  computed: { goals: number; assists: number },
+  official: { goals: number; assists: number },
+  recent: { goals: number; assists: number } = { goals: 0, assists: 0 },
+): boolean {
+  const behind = (c: number, o: number, r: number) => o <= c && c - o <= r;
+  return (
+    behind(computed.goals, official.goals, recent.goals) &&
+    behind(computed.assists, official.assists, recent.assists)
+  );
 }
 
 function describe(mismatches: string[]): string {

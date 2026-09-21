@@ -106,6 +106,20 @@ Huomionarvoista: `VT0` (59 kpl kaudessa) **lasketaan** normaalisti, joten
   ottaa mukaan vain päättyneet ottelut. Vertailu antaa siksi poikkeaman
   jokaisesta illan ottelusta niin kauan kuin peli on kesken. Käynnissä olevassa
   ottelussa pisteitä tehneet pelaajat jätetään tarkistuksen ulkopuolelle.
+- **Kausikooste laahaa myös jäljessä.** Osoitteilla on hyvin eri välimuistit:
+
+  | osoite | `Cache-Control` |
+  | --- | --- |
+  | `games` | `max-age=5, s-maxage=5, stale-while-revalidate=60, stale-if-error=86400` |
+  | `players/stats/summed` | `max-age=150, s-maxage=300, stale-while-revalidate=60, stale-if-error=86400` |
+
+  Otteluluettelo on siis käytännössä aina tuore, mutta koosteesta CDN voi
+  `stale-if-error`-säännön nojalla palauttaa jopa vuorokauden vanhan kopion —
+  havaittu 21.9.2026 klo 04.01, jolloin kooste ei tuntenut vielä 17.–19.9.
+  pelattuja otteluita ja tarkistus raportoi 115 poikkeamaa. Samat luvut
+  täsmäsivät myöhemmin samana päivänä pelaajan tarkkuudella (0/513 eroa).
+  Siksi ero, joka mahtuu pelaajan viime päivien (`SUMMARY_LAG_DAYS`) pisteisiin
+  ja jossa kooste on omaa laskentaa jäljessä, jätetään raportoimatta.
 
 ## Seurojen lyhenteet
 
