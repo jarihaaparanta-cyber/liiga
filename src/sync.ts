@@ -51,6 +51,13 @@ const SCHEDULE_AHEAD_DAYS = 10;
  */
 const SUMMARY_LAG_DAYS = 7;
 
+/**
+ * Montako pistettä oma laskenta saa olla koko sarjassa koostetta edellä
+ * ennen kuin koosteen tulkitaan jääneen jumiin (`summaryCutoff`). Yksi
+ * pelipäivä tuottaa tyypillisesti 50–100 pistettä.
+ */
+const STALE_SUMMARY_MIN_POINTS = 20;
+
 /** D1 rajoittaa yhden batchin kokoa, joten kirjoitukset paloitellaan. */
 const BATCH_SIZE = 100;
 
@@ -239,7 +246,8 @@ export async function sync(
  *
  * Kaksi tunnettua eroa jätetään huomiotta, koska ne eivät kerro virheestä:
  * kesken olevan ottelun pisteet (`skip`) näkyvät koosteessa ennen omaa
- * laskentaa, ja vanhentunut kooste (`SUMMARY_LAG_DAYS`) laahaa omasta
+ * laskentaa, ja vanhentunut kooste (`SUMMARY_LAG_DAYS`, tai pidempään
+ * jumissa olleen koosteen kohdalla `summaryCutoff`) laahaa omasta
  * laskennasta jäljessä. Kumpikin korjaantuu itsestään.
  */
 export function verify(
@@ -250,7 +258,9 @@ export function verify(
 ): string[] {
   const computed = new Map<number, { goals: number; assists: number }>();
   const recent = new Map<number, { goals: number; assists: number }>();
-  const lagSince = addDays(today, -SUMMARY_LAG_DAYS);
+  const defaultLagSince = addDays(today, -SUMMARY_LAG_DAYS);
+  const cutoff = summaryCutoff(stats, summed);
+  const lagSince = cutoff !== null && cutoff < defaultLagSince ? cutoff : defaultLagSince;
   for (const s of stats) {
     const row = computed.get(s.playerId) ?? { goals: 0, assists: 0 };
     row.goals += s.goals;
@@ -276,6 +286,42 @@ export function verify(
     );
   }
   return mismatches;
+}
+
+/**
+ * Mihin päivään asti liiga.fi:n kausikooste näyttää olevan päivitetty?
+ *
+ * Kooste voi jäädä jumiin viikoiksi: marraskuussa 2026 se sisälsi vain
+ * noin 24.10. asti pelatut ottelut, vaikka otteluluettelo oli ajan tasalla.
+ * Silloin jokainen sen jälkeen pisteitä tehnyt pelaaja näkyi poikkeamana,
+ * vaikka oma laskenta oli oikein.
+ *
+ * Päivä päätellään koko sarjan pistemäärästä: se on ensimmäinen ottelupäivä,
+ * jona oma kumulatiivinen pistesumma (maalit + syötöt) yltää koosteen
+ * yhteissummaan. Jos kooste on ajan tasalla, edellä tai vain vähän jäljessä
+ * (`STALE_SUMMARY_MIN_POINTS`), palautetaan `null`: pieni ero kertoo
+ * todennäköisemmin yksittäisen pelaajan virheestä, joka halutaan nähdä.
+ */
+export function summaryCutoff(
+  stats: StatRow[],
+  summed: { goals: number; assists: number }[],
+): string | null {
+  const officialTotal = summed.reduce((sum, p) => sum + p.goals + p.assists, 0);
+  const byDate = new Map<string, number>();
+  let computedTotal = 0;
+  for (const s of stats) {
+    const points = s.goals + s.assists;
+    byDate.set(s.gameDate, (byDate.get(s.gameDate) ?? 0) + points);
+    computedTotal += points;
+  }
+  if (computedTotal - officialTotal < STALE_SUMMARY_MIN_POINTS) return null;
+
+  let cumulative = 0;
+  for (const date of [...byDate.keys()].sort()) {
+    cumulative += byDate.get(date) ?? 0;
+    if (cumulative >= officialTotal) return date;
+  }
+  return null;
 }
 
 /**

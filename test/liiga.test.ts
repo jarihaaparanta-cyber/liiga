@@ -7,7 +7,7 @@ import {
   toPosition,
   type LiigaGame,
 } from '../src/liiga';
-import { playersInLiveGames, verify } from '../src/sync';
+import { playersInLiveGames, summaryCutoff, verify } from '../src/sync';
 import fixture from './fixtures/games.json';
 
 // Oikeaa liiga.fi-dataa kaudelta 2026-27: kolme päättynyttä ottelua ja yksi
@@ -254,5 +254,46 @@ describe('verify', () => {
   it('ohittaa erikseen ohitettavat pelaajat', () => {
     const stats = [stat(1, '2026-09-01', 2, 0)];
     expect(verify(stats, [official(1, 1, 0)], new Set([1]), today)).toEqual([]);
+  });
+
+  describe('viikkoja jumissa oleva kooste', () => {
+    const late = '2026-11-14';
+    // Kooste tuntee vain 24.10. asti pelatut ottelut.
+    const stats = [
+      stat(1, '2026-10-01', 1, 0),
+      stat(2, '2026-10-24', 0, 1),
+      stat(1, '2026-10-30', 2, 1),
+      stat(2, '2026-11-11', 1, 0),
+      // Muiden pelaajien pisteitä koosteen jälkeen: kooste on selvästi jäljessä.
+      stat(4, '2026-11-13', 10, 10),
+    ];
+    const summed = [official(1, 1, 0), official(2, 0, 1), official(4, 0, 0)];
+
+    it('päättelee mihin asti kooste on päivitetty', () => {
+      expect(summaryCutoff(stats, summed)).toBe('2026-10-24');
+    });
+
+    it('vaikenee kun ero mahtuu koosteen jälkeen pelattuihin otteluihin', () => {
+      expect(verify(stats, summed, new Set(), late)).toEqual([]);
+    });
+
+    it('raportoi silti eron koosteen tuntemissa otteluissa', () => {
+      // Pelaaja 3:n maali on 15.9., selvästi ennen koosteen rajapäivää.
+      const withError = [...stats, stat(3, '2026-09-15', 1, 0)];
+      const summedWithError = [...summed, official(3, 0, 0)];
+      expect(verify(withError, summedWithError, new Set(), late)).toEqual([
+        'Testi Pelaaja3: virallinen 0+0, laskettu 1+0',
+      ]);
+    });
+
+    it('ei palauta päivää kun kooste on ajan tasalla', () => {
+      const fresh = [official(1, 3, 1), official(2, 1, 1), official(4, 10, 10)];
+      expect(summaryCutoff(stats, fresh)).toBeNull();
+    });
+
+    it('ei tulkitse pientä eroa jumiutumiseksi', () => {
+      const almost = [official(1, 3, 1), official(2, 1, 1), official(4, 5, 5)];
+      expect(summaryCutoff(stats, almost)).toBeNull();
+    });
   });
 });
