@@ -322,6 +322,7 @@ table { width: 100%; border-collapse: collapse; font-size: .8125rem; table-layou
 .team col.c-club   { width: 4.2rem; }
 .team col.c-num    { width: 2.1rem; }
 .team col.c-points { width: 2.6rem; }
+.team col.c-today  { width: 3.6rem; }
 
 thead th {
   text-align: right;
@@ -353,6 +354,9 @@ tbody tr:last-child td { border-bottom: 0; }
 .col-club { color: var(--ink-secondary); font-size: .8125rem; }
 .num { font-variant-numeric: tabular-nums; }
 .col-points { font-weight: 700; }
+/* Päivän pisteet korostetaan, jotta illan tekijät erottuvat yhdellä silmäyksellä. */
+.col-today--scored { color: #ff8f8f; font-weight: 700; }
+.row-sub .col-today--scored, .row-swapped-out .col-today--scored { font-weight: 600; }
 
 /* Varapelaajat erottuvat: he eivät kerrytä pisteitä ennen vaihtoa. */
 .row-sub td { color: var(--ink-muted); font-style: italic; }

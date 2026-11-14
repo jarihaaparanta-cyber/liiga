@@ -51,6 +51,8 @@ export interface StandingsPlayer {
   streak: number;
   /** Liekkien määrä putkesta, 0–5. */
   flames: number;
+  /** Tänään pelatuista ja kesken olevista otteluista, tai null jos ei pisteitä. */
+  today: { goals: number; assists: number } | null;
 }
 
 export interface StandingsTeam {
@@ -177,6 +179,17 @@ export async function loadStandings(
     );
   }
 
+  // Päivän pisteet pelaajittain: tänään päättyneet ottelut ovat jo
+  // tietokannassa ja kesken olevat lisättiin yllä.
+  const todayByPlayer = new Map<number, { goals: number; assists: number }>();
+  for (const s of stats) {
+    if (s.game_date !== today || s.goals + s.assists === 0) continue;
+    const row = todayByPlayer.get(s.player_id) ?? { goals: 0, assists: 0 };
+    row.goals += s.goals;
+    row.assists += s.assists;
+    todayByPlayer.set(s.player_id, row);
+  }
+
   const nameById = new Map(players.map((p) => [p.id, p]));
   const streaks = await loadStreaks(db, players, stats, liveData?.endedGames ?? [], today);
   const schedule = await loadSchedule(db, today, liveData?.liveGames ?? [], nameById);
@@ -244,6 +257,7 @@ export async function loadStandings(
         benchPoints: p.bench.points,
         streak: streaks.get(p.playerId) ?? 0,
         flames: flames(streaks.get(p.playerId) ?? 0),
+        today: todayByPlayer.get(p.playerId) ?? null,
       };
     });
 

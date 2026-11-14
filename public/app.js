@@ -476,6 +476,7 @@ function teamCard(team) {
         <colgroup>
           <col class="c-role"><col><col class="c-club">
           <col class="c-num"><col class="c-num"><col class="c-num"><col class="c-points">
+          <col class="c-today">
         </colgroup>
         <thead>
           <tr>
@@ -486,6 +487,7 @@ function teamCard(team) {
             <th scope="col" title="Maalit">M</th>
             <th scope="col" title="Syötöt">S</th>
             <th scope="col" title="Pisteet">P</th>
+            <th scope="col" class="col-today" title="Tämän päivän maalit + syötöt">Tänään</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -502,6 +504,14 @@ function teamCard(team) {
           }</button>
       </div>
     </article>`;
+}
+
+/** Päivän pisteet muodossa maalit+syötöt, esim. "0+1". Tyhjä jos ei pisteitä. */
+function todayCell(player) {
+  const t = player.today;
+  if (!t) return '<td class="num col-today"></td>';
+  const label = `Tänään ${t.goals} maalia ja ${t.assists} syöttöä`;
+  return `<td class="num col-today col-today--scored" title="${label}">${t.goals}+${t.assists}</td>`;
 }
 
 function swapsLabel(count) {
@@ -532,6 +542,7 @@ function playerRow(player, team) {
     <td class="num">${player.goals}</td>
     <td class="num">${player.assists}</td>
     <td class="num col-points">${player.points}</td>
+    ${todayCell(player)}
   </tr>`;
 }
 
