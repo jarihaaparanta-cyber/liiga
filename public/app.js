@@ -84,7 +84,9 @@ function scheduleRefresh() {
 
 /** Merkintä "+2" kesken ottelun kertyneistä pisteistä. */
 function liveBadge(points) {
-  return points > 0 ? `<span class="live-badge">+${points}</span>` : '';
+  return points > 0
+    ? `<span class="live-badge" title="Tänään kertyneet pisteet">+${points}</span>`
+    : '';
 }
 
 /* ---------------- Kärkitilanne ---------------- */

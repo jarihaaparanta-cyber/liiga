@@ -164,7 +164,7 @@ main > * { min-width: 0; }
   50% { opacity: .35; }
 }
 
-/* Kesken ottelun kertyneet pisteet, jo mukana kokonaissummassa. */
+/* Kokoonpanon tänään kertyneet pisteet, jo mukana kokonaissummassa. */
 .live-badge {
   margin-left: .35rem;
   font-size: .8125rem; font-weight: 650;

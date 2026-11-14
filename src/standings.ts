@@ -59,7 +59,10 @@ export interface StandingsTeam {
   id: string;
   name: string;
   color: string;
-  /** Tänään kesken olevista otteluista kertyneet pisteet, jo mukana summassa. */
+  /**
+   * Kokoonpanon tänään kertyneet pisteet (päättyneet ja kesken olevat
+   * ottelut), jo mukana summassa. Täsmää Tänään-sarakkeen kanssa.
+   */
   livePoints: number;
   /** Onko joukkueelle asetettu tunnussana. Ilman sitä vaihtoa ei voi tehdä. */
   hasPin: boolean;
@@ -164,7 +167,6 @@ export async function loadStandings(
   // Live-suoritukset lisätään tietokannan rivien perään. Ne koskevat vain
   // tätä päivää eivätkä ole vielä tietokannassa, joten päällekkäisyyttä ei
   // synny.
-  const liveByPlayer = new Map<number, number>();
   for (const stat of liveData?.stats ?? []) {
     stats.push({
       player_id: stat.playerId,
@@ -173,10 +175,6 @@ export async function loadStandings(
       goals: stat.goals,
       assists: stat.assists,
     });
-    liveByPlayer.set(
-      stat.playerId,
-      (liveByPlayer.get(stat.playerId) ?? 0) + stat.goals + stat.assists,
-    );
   }
 
   // Päivän pisteet pelaajittain: tänään päättyneet ottelut ovat jo
@@ -261,11 +259,14 @@ export async function loadStandings(
       };
     });
 
-    // Live-pisteet lasketaan vain kokoonpanossa olevilta pelaajilta, samoin
-    // kuin varsinainen saldo.
+    // Päivän pisteet lasketaan vain kokoonpanossa olevilta pelaajilta, samoin
+    // kuin varsinainen saldo. Penkin pisteet näkyvät vain Tänään-sarakkeessa.
     const livePoints = tally.players
       .filter((p) => p.active)
-      .reduce((sum, p) => sum + (liveByPlayer.get(p.playerId) ?? 0), 0);
+      .reduce((sum, p) => {
+        const t = todayByPlayer.get(p.playerId);
+        return sum + (t ? t.goals + t.assists : 0);
+      }, 0);
 
     result.push({
       id: team.id,
