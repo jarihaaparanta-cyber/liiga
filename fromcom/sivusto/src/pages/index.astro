@@ -1,33 +1,272 @@
 ---
-// VÄLIAIKAINEN ETUSIVU. Korvataan demosivun etusivulla (hero, palvelut, referenssit,
-// prosessi, kartta, kumppanit, 5-vaiheinen tarjouslomake) seuraavassa vaiheessa.
+import { Image } from 'astro:assets';
 import Sivupohja from '../layouts/Sivupohja.astro';
-import SivuHero from '../components/SivuHero.astro';
-import Tarjous from '../components/Tarjous.astro';
 import Ikoni from '../components/Ikoni.astro';
-import { palvelut, TARJOUS_URL } from '../data/sivusto.js';
+import Galleria from '../components/Galleria.astro';
+import Kumppanit from '../components/Kumppanit.astro';
+import Tarjouslomake from '../components/Tarjouslomake.astro';
+import Pikaopas from '../components/Pikaopas.astro';
+import { palvelut, yritys, yhteyshenkilot } from '../data/sivusto.js';
 import hero from '../assets/kuvat/Fromcom_hero.webp';
+import tiimi from '../assets/kuvat/IMG-20230131-WA0004.jpg';
+import kalusto from '../assets/kuvat/IMG_20220428_174220470.jpg';
+import sininen from '../assets/kuvat/Galleria_sininen.webp';
+import putket from '../assets/kuvat/FromCom_4.webp';
+import novatron from '../assets/kuvat/IMG-20220524-WA0005.webp';
+import ranta from '../assets/kuvat/IMG_20220711_221224963_HDR.webp';
+import tyomaa from '../assets/kuvat/FromCom_2.webp';
+import piha from '../assets/kuvat/valmis1-1.webp';
+
+const referenssit = [
+  { kuva: sininen, alt: 'FromComin turkoosi kaivinkone metsäisellä maanrakennustyömaalla', otsikko: 'Kalustoa työmaalla', tunniste: 'FROMCOM OY / KALUSTO' },
+  { kuva: putket, alt: 'Putkitus ja sorapohja työmaalla', otsikko: 'Vesi- ja viemärityöt', tunniste: 'FROMCOM OY / MAANRAKENNUS' },
+  { kuva: novatron, alt: 'Novatron-koneohjauksen näyttö kaivinkoneen ohjaamossa', otsikko: 'Koneohjaus työssä', tunniste: 'NOVATRON / 3D-KONEOHJAUS' },
+  { kuva: ranta, alt: 'Rakennuksen perustukset rantamaisemassa', otsikko: 'Rakennusten perustustyöt', tunniste: 'FROMCOM OY / PERUSTUKSET' },
+  { kuva: tyomaa, alt: 'Maanrakennustyömaa, kaivinkone ja järvimaisema', otsikko: 'Työmaan ympäristö', tunniste: 'FROMCOM OY / TYÖMAA' },
+  { kuva: piha, alt: 'Valmis nurmipiha ja rakennukset metsäisessä ympäristössä', otsikko: 'Piha- ja viherrakentaminen', tunniste: 'FROMCOM OY / PIHAT' },
+];
+
+const prosessi = [
+  { nimi: 'Yhteydenotto', teksti: 'Kerro, millaista maanrakennustyötä tarvitset, missä kohde sijaitsee ja millaista aikataulua toivot.', tunniste: 'KOHDE / TARVE / AIKATAULU' },
+  { nimi: 'Kartoitus ja tarjous', teksti: 'Käydään läpi kohteen olosuhteet ja työn laajuus. Suunnitellaan sopiva toteutus ja sovitaan tarjouksesta sekä työn etenemisestä.', tunniste: 'KARTOITUS / SUUNNITELMA / TARJOUS' },
+  { nimi: 'Työn toteutus', teksti: 'Toteutamme sovitut maanrakennustyöt suunnitelman mukaisesti. Novatron 3D-koneohjaus tukee tarkkaa työskentelyä ja auttaa vähentämään turhaa kaivamista.', tunniste: 'NOVATRON 3D-KONEOHJAUS' },
+  { nimi: 'Viimeistely ja luovutus', teksti: 'Täytöt, pintojen tasaukset ja pihan viimeistely tehdään sovitun laajuuden mukaisesti. Lopuksi käydään työn lopputulos yhdessä läpi.', tunniste: 'VIIMEISTELY / LOPPUTULOKSEN LÄPIKÄYNTI' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HomeAndConstructionBusiness',
+  name: yritys.nimi,
+  description: 'Maanrakennustyöt Pirkanmaalla: perustustyöt, kunnallistekniikka, vesi- ja viemärityöt, piha- ja viherrakentaminen, tonttien raivaukset ja purkutyöt.',
+  url: 'https://www.fromcom.fi/',
+  telephone: yhteyshenkilot[0].tel,
+  email: yhteyshenkilot[0].email,
+  address: { '@type': 'PostalAddress', streetAddress: yritys.katuosoite, postalCode: yritys.postinumero, addressLocality: yritys.kaupunki, addressCountry: 'FI' },
+  areaServed: 'Pirkanmaa',
+};
+const pad = (n) => String(n).padStart(2, '0');
 ---
 <Sivupohja>
-  <SivuHero
-    kuva={hero}
-    kuvaAlt="FromComin turkoosi kaivinkone kuormaa maa-ainesta työmaalla"
-    ylaotsikko="FROMCOM OY / PIRKANMAA"
-    otsikko="Maanrakennustyöt Pirkanmaalla."
-    ingressi="Perustustyöt, kunnallistekniikka, piha- ja viherrakentaminen sekä purkutyöt. Palvelemme yksityisiä ja yrityksiä koko Pirkanmaan alueella."
-  >
-    <div class="buttons">
-      <a class="button button-light" href={TARJOUS_URL}>Pyydä tarjous <Ikoni nimi="nuoli" /></a>
-      <a class="button button-outline" href="/palvelut/">Tutustu palveluihin <Ikoni nimi="nuoli" /></a>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
+
+  <!-- 1. Hero -->
+  <section class="home-hero" id="alku" aria-label="Maanrakennustyöt Pirkanmaalla">
+    <div class="page-hero-bg">
+      <Image src={hero} alt="FromComin turkoosi kaivinkone kuormaa maa-ainesta työmaalla" widths={[640, 1080, 1600, 2200]} sizes="100vw" loading="eager" fetchpriority="high" />
     </div>
-  </SivuHero>
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head"><span class="eyebrow">PALVELUT</span><h2>Maanrakennuspalvelut</h2></div>
-      <ul class="service-links">
-        {palvelut.map((p, i) => <li><a href={`/palvelut/${p.slug}/`}><span>0{i + 1}</span>{p.nimi}<Ikoni nimi="nuoli" koko={22} /></a></li>)}
-      </ul>
+    <div class="wrap home-hero-inner">
+      <div class="home-hero-tech" aria-hidden="true"><span class="home-hero-target"></span><span>NOVATRON<br />3D-KONEOHJAUS</span></div>
+      <span class="eyebrow">FROMCOM OY / PIRKANMAA</span>
+      <h1><span>Maanrakennustyöt</span> <span>Pirkanmaalla.</span></h1>
+      <p class="lead">Perustustyöt, kunnallistekniikka, piha- ja viherrakentaminen sekä purkutyöt. Palvelemme yksityisiä ja yrityksiä koko Pirkanmaan alueella.</p>
+      <div class="buttons">
+        <a class="button button-light" href="#tarjous">Pyydä tarjous <Ikoni nimi="nuoli" /></a>
+        <a class="button button-outline" href="/palvelut/">Tutustu palveluihin <Ikoni nimi="nuoli" /></a>
+      </div>
+      <div class="home-hero-bottom">
+        <span class="eyebrow">KANGASALA / PIRKANMAA</span>
+        <a href="#yritys" class="home-hero-down" aria-label="Vieritä alas"><Ikoni nimi="alas" koko={22} /></a>
+        <span class="eyebrow">YKSITYISET &amp; YRITYKSET</span>
+      </div>
     </div>
   </section>
-  <Tarjous />
+
+  <!-- 2. Yritys -->
+  <section class="section" id="yritys">
+    <div class="wrap split">
+      <div class="prose">
+        <span class="eyebrow">01 / FROMCOM OY</span>
+        <h2 style="margin-top:18px">Maanrakennusta pienistä kohteista suuriin urakoihin.</h2>
+        <p>FromCom Oy tarjoaa laadukasta ja luotettavaa maanrakennuspalvelua koko Pirkanmaalla. Palvelemme yksityisiä ja yrityksiä niin pienissä töissä kuin suuremmissakin urakoissa.</p>
+        <p>Toteutamme työt tehokkaasti ja sovitussa aikataulussa. Hyödynnämme Novatron 3D-koneohjausta, joka tukee tarkkaa työskentelyä ja auttaa vähentämään turhaa kaivamista. Tärkeintä meille on tyytyväinen asiakas.</p>
+        <dl class="facts">
+          <div><dt>Kotipaikka</dt><dd>Kangasala</dd></div>
+          <div><dt>Toiminta-alue</dt><dd>Koko Pirkanmaa</dd></div>
+          <div><dt>Palvelemme</dt><dd>Yksityiset ja yritykset</dd></div>
+        </dl>
+        <a class="button button-dark" href="/yritys/" style="margin-top:32px">Lisää yrityksestä <Ikoni nimi="nuoli" /></a>
+      </div>
+      <div class="split-media"><Image src={tiimi} alt="Kaksi työvaatteisiin pukeutunutta miestä oranssin kaivinkoneen ohjaamon luona" widths={[600, 1000]} sizes="(max-width: 860px) 100vw, 50vw" loading="lazy" /></div>
+    </div>
+  </section>
+
+  <!-- 3. Palvelut -->
+  <section class="section section-dark" id="palvelut">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">02 / PALVELUT RAKENTAMISEN ERI VAIHEISIIN</span>
+        <h2>Maanrakennuspalvelut</h2>
+        <p>Monipuoliset maanrakennuspalvelut rakentamisen eri vaiheisiin.</p>
+      </div>
+      <div class="svc" data-services>
+        <ul class="svc-list">
+          {palvelut.map((p, i) => (
+            <li class:list={['svc-item', { 'is-open': i === 0 }]}>
+              <button type="button" class="svc-head" aria-expanded={i === 0 ? 'true' : 'false'} aria-controls={`svc-${p.slug}`} data-index={i}>
+                <span class="svc-num">{pad(i + 1)}</span>
+                <span class="svc-name">{p.nimi}</span>
+                <Ikoni nimi="alas" koko={22} />
+              </button>
+              <div class="svc-body" id={`svc-${p.slug}`} role="region">
+                <div class="svc-body-inner">
+                  <div class="svc-mobile-img"><Image src={p.kuva} alt="" widths={[480, 800]} sizes="100vw" loading="lazy" /></div>
+                  <p>{p.lyhyt}</p>
+                  <a class="card-more" href={`/palvelut/${p.slug}/`}>Tutustu palveluun <Ikoni nimi="nuoli" koko={16} /></a>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div class="svc-preview" aria-hidden="true">
+          {palvelut.map((p, i) => (
+            <figure class:list={['svc-photo', { 'is-active': i === 0 }]} data-photo={i}>
+              <Image src={p.kuva} alt={p.kuvaAlt} widths={[700, 1100]} sizes="45vw" loading="lazy" />
+              <figcaption><span class="eyebrow">{pad(i + 1)} / 06 · FROMCOM OY / PALVELUT</span><strong>{p.nimi}</strong></figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Referenssit -->
+  <section class="section" id="referenssit">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">03 / REFERENSSIT FROMCOM OY</span>
+        <h2>Referenssit</h2>
+        <p>Koneita, työmaita ja toteutuksia FromComin omista kohteista.</p>
+      </div>
+      <Galleria kuvat={referenssit} />
+      <a class="button button-dark" href="/referenssit/" style="margin-top:32px">Kaikki referenssit <Ikoni nimi="nuoli" /></a>
+    </div>
+  </section>
+
+  <!-- 5. Kalusto -->
+  <section class="equip" id="kalusto">
+    <div class="equip-bg"><Image src={kalusto} alt="Oranssi kaivinkone ja työntekijä tärylevyn kanssa rakennuksen sorapohjalla" widths={[800, 1400, 2000]} sizes="100vw" loading="lazy" /></div>
+    <div class="wrap equip-inner">
+      <span class="eyebrow">04 / KALUSTO · VOIMAA TYÖMAALLE</span>
+      <h2>Kalusto työn vaatimusten mukaan.</h2>
+      <p>Työn vaatimuksiin sopiva kalusto ja moderni koneohjaustekniikka tukevat tehokasta ja tarkkaa toteutusta.</p>
+      <a class="button button-light" href="/kalusto/">Tutustu kalustoon <Ikoni nimi="nuoli" /></a>
+      <div class="measure" aria-hidden="true"></div>
+      <div class="equip-tags"><span class="eyebrow">MAANRAKENNUS / FROMCOM OY</span><span class="eyebrow">NOVATRON 3D-KONEOHJAUS</span></div>
+    </div>
+  </section>
+
+  <!-- 6. Prosessi -->
+  <section class="section section-dark" id="prosessi">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">05 / NÄIN PROJEKTI ETENEE</span>
+        <h2>Prosessi</h2>
+        <p>Kerro kohteestasi ja työn tarpeista. Katsotaan yhdessä sopiva toteutus.</p>
+      </div>
+      <div class="proc" data-process>
+        <div class="proc-tabs" role="tablist" aria-label="Projektin vaiheet">
+          {prosessi.map((v, i) => (
+            <button type="button" role="tab" id={`proc-tab-${i}`} aria-controls={`proc-panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} class="proc-tab">
+              <span class="svc-num">{pad(i + 1)}</span>{v.nimi}
+            </button>
+          ))}
+        </div>
+        <div class="proc-progress" aria-hidden="true"><span data-proc-bar></span></div>
+        {prosessi.map((v, i) => (
+          <div class="proc-panel" role="tabpanel" id={`proc-panel-${i}`} aria-labelledby={`proc-tab-${i}`} hidden={i !== 0}>
+            <span class="proc-big" aria-hidden="true">{pad(i + 1)}</span>
+            <div>
+              <h3>{v.nimi}</h3>
+              <p>{v.teksti}</p>
+              <span class="eyebrow">{v.tunniste}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Toiminta-alue -->
+  <section class="section" id="toiminta-alue">
+    <div class="wrap split">
+      <div class="prose">
+        <span class="eyebrow">06 / TOIMINTA-ALUE · KANGASALTA KÄSIN</span>
+        <h2 style="margin-top:18px">Maanrakennusta koko Pirkanmaalla.</h2>
+        <p>FromCom Oy toimii Kangasalta käsin ja toteuttaa maanrakennustöitä yksityisille ja yrityksille koko Pirkanmaan alueella.</p>
+        <a class="button button-dark" href="#tarjous">Kysy omasta kohteestasi <Ikoni nimi="nuoli" /></a>
+      </div>
+      <div class="contact-map">
+        <img src="/pirkanmaa.svg" alt="Kartta Pirkanmaan alueesta, Kangasala on merkitty kartalle" width="800" height="740" loading="lazy" />
+        <small>Aluerajat: © EuroGeographics / Eurostat, GISCO</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Yhteistyökumppanit -->
+  <section class="section section-tint" id="yhteistyokumppanit">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">07 / VERKOSTO</span>
+        <h2>Yhteistyökumppanit.</h2>
+      </div>
+      <Kumppanit />
+    </div>
+  </section>
+
+  <!-- 9. Tarjouspyyntö -->
+  <section class="quote" id="tarjous">
+    <div class="cta-bg"><Image src={hero} alt="" widths={[800, 1600]} sizes="100vw" loading="lazy" /></div>
+    <div class="wrap">
+      <div class="section-head quote-head">
+        <span class="eyebrow">FROMCOM OY / KERRO KOHTEESTASI</span>
+        <h2>Pyydä tarjous!</h2>
+        <p>Kerro työn tarpeista, kohteesta ja aikataulusta. Muutamalla valinnalla kokoat tarjouspyynnön maanrakennustöistä.</p>
+      </div>
+      <Tarjouslomake />
+    </div>
+  </section>
+
+  <Pikaopas />
 </Sivupohja>
+
+<script>
+  // Palvelut: haitari + vaihtuva kuva
+  document.querySelectorAll<HTMLElement>('[data-services]').forEach((root) => {
+    const items = Array.from(root.querySelectorAll<HTMLElement>('.svc-item'));
+    const photos = Array.from(root.querySelectorAll<HTMLElement>('.svc-photo'));
+    const open = (i: number) => {
+      items.forEach((it, j) => {
+        const on = j === i;
+        it.classList.toggle('is-open', on);
+        it.querySelector('button')!.setAttribute('aria-expanded', String(on));
+      });
+      photos.forEach((p, j) => p.classList.toggle('is-active', j === i));
+    };
+    items.forEach((it, i) => {
+      const btn = it.querySelector('button')!;
+      btn.addEventListener('click', () => open(it.classList.contains('is-open') && window.innerWidth <= 900 ? -1 : i));
+      btn.addEventListener('mouseenter', () => { if (window.matchMedia('(hover: hover) and (min-width: 901px)').matches) open(i); });
+    });
+  });
+
+  // Prosessi: välilehdet
+  document.querySelectorAll<HTMLElement>('[data-process]').forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role=tab]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[role=tabpanel]'));
+    const bar = root.querySelector<HTMLElement>('[data-proc-bar]')!;
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(j === i)); t.tabIndex = j === i ? 0 : -1; t.classList.toggle('is-done', j < i); });
+      panels.forEach((p, j) => (p.hidden = j !== i));
+      bar.style.width = `${((i + 1) / tabs.length) * 100}%`;
+      if (focus) tabs[i].focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') select((i + 1) % tabs.length, true);
+        if (e.key === 'ArrowLeft') select((i - 1 + tabs.length) % tabs.length, true);
+      });
+    });
+    select(0);
+  });
+</script>

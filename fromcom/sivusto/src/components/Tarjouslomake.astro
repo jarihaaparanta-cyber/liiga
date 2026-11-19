@@ -1,0 +1,448 @@
+---
+// 5-vaiheinen tarjouslomake demosivun mukaan.
+// Lähetys: toistaiseksi lomake kokoaa tarjouspyynnön ja avaa sen valmiina
+// sähköpostiviestinä (mailto) Artolle. Kun taustapalvelu on tehty, lähetys
+// vaihdetaan suoraksi lähetykseksi kohdassa "LÄHETYS" alla.
+import Ikoni from './Ikoni.astro';
+import { yhteyshenkilot } from '../data/sivusto.js';
+
+const palvelut = [
+  { id: 'perustukset', nimi: 'Rakennusten perustustyöt', vihje: 'Rakennuksen pohjatyöt' },
+  { id: 'kunnallistekniikka', nimi: 'Kunnallistekniset työt', vihje: 'Maanrakennus infrakohteeseen' },
+  { id: 'putket', nimi: 'Vesi- ja viemärityöt', vihje: 'Vesi- ja viemärijärjestelmien kaivutyöt' },
+  { id: 'piha', nimi: 'Piha- ja viherrakentaminen', vihje: 'Piha ja ympäristö' },
+  { id: 'raivaus', nimi: 'Tonttien raivaukset', vihje: 'Valmistellaan tontti rakentamiseen' },
+  { id: 'purku', nimi: 'Rakennusten purkutyöt', vihje: 'Rakennuksen purkaminen' },
+];
+const kohteet = ['Rakennustontti', 'Piha tai asuinkiinteistö', 'Liike- tai teollisuuskohde', 'Infrakohde', 'Vapaa-ajan kiinteistö', 'Muu kohde'];
+const tyot = {
+  perustukset: ['Kaivutyöt', 'Pohjan rakentaminen', 'Täytöt ja tasaukset', 'Koko maanrakennus', 'En osaa vielä sanoa'],
+  kunnallistekniikka: ['Kaivannot', 'Alueen maanrakennus', 'Putkilinjojen kaivutyöt', 'En osaa vielä sanoa'],
+  putket: ['Vesijohto', 'Viemäröinti', 'Molemmat', 'En osaa vielä sanoa'],
+  piha: ['Pihan pohjatyöt', 'Pihan muotoilu', 'Nurmialue', 'Koko pihan rakentaminen', 'En osaa vielä sanoa'],
+  raivaus: ['Tontin raivaus', 'Maa-alueen valmistelu', 'Rakentamiseen valmistelu', 'En osaa vielä sanoa'],
+  purku: ['Pientalo', 'Ulkorakennus', 'Muu rakennus', 'En osaa vielä sanoa'],
+};
+const aikataulut = ['Mahdollisimman pian', 'Kuukauden sisällä', 'Lähikuukausina', 'Kartoitan vielä vaihtoehtoja'];
+const paikkakunnat = ['Kangasala', 'Tampere', 'Nokia', 'Ylöjärvi', 'Lempäälä', 'Pirkkala', 'Valkeakoski', 'Akaa'];
+const pintaalat = [100, 250, 500, 1000, 2000];
+const vaiheet = ['Palvelu', 'Kohde', 'Tarpeet', 'Sijainti', 'Yhteystiedot'];
+const otsikot = ['Mitä maanrakennustyötä tarvitset?', 'Millainen kohde on kyseessä?', 'Kerro vähän työstä.', 'Missä ja milloin?', 'Miten tavoitamme sinut?'];
+const vihjeet = [
+  'Valitse palvelu, niin siirrymme suoraan eteenpäin.',
+  'Valitse kohdetta parhaiten kuvaava vaihtoehto.',
+  'Valitse työn tarpeet. Pinta-alan ja muut tiedot voit täydentää halutessasi.',
+  'Sijainti ja aikataulu auttavat suunnittelemaan toteutuksen.',
+  'Viimeinen vaihe. Valitse, miten haluat meidän ottavan yhteyttä.',
+];
+const vastaanottaja = yhteyshenkilot[0];
+const pad = (n) => String(n).padStart(2, '0');
+---
+<div class="q" data-quote data-email={vastaanottaja.email} data-tyot={JSON.stringify(tyot)}>
+  <aside class="q-summary" aria-label="Tarjouspyyntösi">
+    <div class="q-summary-head">
+      <span class="eyebrow">TARJOUSPYYNTÖSI</span>
+      <span class="q-step-count" data-step-count>Vaihe 1 / 5</span>
+    </div>
+    <ul class="q-summary-list">
+      {['Palvelu', 'Kohde', 'Tarpeet', 'Sijainti', 'Aikataulu'].map((n) => (
+        <li data-summary={n}><span>{n}</span><strong>Ei vielä valittu</strong></li>
+      ))}
+    </ul>
+    <p class="q-summary-note">Palvelemme yksityisiä ja yrityksiä koko Pirkanmaalla.</p>
+    <a class="q-summary-call" href={`tel:${vastaanottaja.tel}`}>
+      <Ikoni nimi="puhelin" />
+      <span><small>MIELUUMMIN SOITTO?</small><strong>{vastaanottaja.puhelin}</strong></span>
+    </a>
+  </aside>
+
+  <form class="q-main" novalidate data-form>
+    <div class="q-top">
+      <span class="eyebrow" data-step-label>VAIHE 01 / 05 · Palvelu</span>
+      <span class="q-time">NOIN 1 MIN</span>
+    </div>
+    <ol class="q-progress" aria-label="Lomakkeen vaiheet">
+      {vaiheet.map((v, i) => (
+        <li><button type="button" data-goto={i} disabled={i > 0}><span class="q-bar"><span></span></span><b>{pad(i + 1)}</b> {v}</button></li>
+      ))}
+    </ol>
+
+    <div class="q-done" data-done hidden>
+      <h3 tabindex="-1">Tarjouspyyntösi on valmis.</h3>
+      <p>Sähköpostiohjelmasi avautui valmiin viestin kanssa osoitteeseen <strong>{vastaanottaja.email}</strong>. Lähetä viesti sieltä, niin otamme sinuun yhteyttä.</p>
+      <p>Jos sähköposti ei auennut, soita suoraan: <a href={`tel:${vastaanottaja.tel}`}>{vastaanottaja.puhelin}</a>.</p>
+      <div class="buttons">
+        <a class="button button-dark" data-mailto href="#">Avaa sähköposti uudelleen <Ikoni nimi="posti" /></a>
+        <button class="button button-outline" type="button" data-edit>Muokkaa vastauksia <Ikoni nimi="vasen" /></button>
+      </div>
+    </div>
+
+    <div class="q-stage" data-stage>
+      <h3 tabindex="-1" data-heading>{otsikot[0]}</h3>
+      <p class="q-hint" data-hint>{vihjeet[0]}</p>
+
+      <!-- Vaihe 1 -->
+      <fieldset class="q-step" data-step="0">
+        <legend class="sr-only">Valitse palvelu</legend>
+        <div class="q-grid">
+          {palvelut.map((p, i) => (
+            <label class="q-card">
+              <input class="sr-only" type="radio" name="palvelu" value={p.id} data-label={p.nimi} data-auto />
+              <span class="q-card-num">{pad(i + 1)}</span>
+              <strong>{p.nimi}</strong>
+              <small>{p.vihje}</small>
+            </label>
+          ))}
+        </div>
+        <p class="q-error" data-error="palvelu" hidden>Valitse palvelu.</p>
+      </fieldset>
+
+      <!-- Vaihe 2 -->
+      <fieldset class="q-step" data-step="1" hidden>
+        <legend class="sr-only">Valitse kohteen tyyppi</legend>
+        <div class="q-grid">
+          {kohteet.map((k, i) => (
+            <label class="q-card">
+              <input class="sr-only" type="radio" name="kohde" value={k} data-label={k} data-auto />
+              <span class="q-card-num">{pad(i + 1)}</span>
+              <strong>{k}</strong>
+            </label>
+          ))}
+        </div>
+        <p class="q-error" data-error="kohde" hidden>Valitse kohteen tyyppi.</p>
+      </fieldset>
+
+      <!-- Vaihe 3 -->
+      <div class="q-step" data-step="2" hidden>
+        <fieldset class="q-question">
+          <legend>Mitä työhön kuuluu? <small>Pakollinen · voit valita useamman</small></legend>
+          <div class="q-chips" data-work></div>
+          <p class="q-error" data-error="tyo" hidden>Valitse vähintään yksi vaihtoehto.</p>
+        </fieldset>
+        <fieldset class="q-question" data-area-question>
+          <legend>Arvio työn pinta-alasta <small>Vapaaehtoinen · arvio riittää</small></legend>
+          <div class="q-area">
+            <output data-area-out>Ei valittu</output>
+            <div class="q-chips">
+              {pintaalat.map((a) => <button type="button" class="q-chip" data-area-preset={a} aria-pressed="false">{a >= 2000 ? '2000+' : a} m²</button>)}
+            </div>
+            <input type="range" min="20" max="2000" step="10" value="100" name="pinta-ala" aria-label="Pinta-ala neliömetreinä" data-area-range />
+            <button type="button" class="q-text-button" data-area-clear hidden>Tyhjennä pinta-ala</button>
+          </div>
+        </fieldset>
+        <fieldset class="q-question">
+          <legend>Onko suunnitelmat valmiina? <small>Vapaaehtoinen</small></legend>
+          <div class="q-chips">
+            {['Suunnitelmat valmiina', 'Suunnittelu kesken', 'En osaa sanoa'].map((v) => (
+              <label class="q-chip"><input class="sr-only" type="radio" name="suunnitelmat" value={v} />{v}</label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset class="q-question">
+          <legend>Millainen kulkuyhteys kohteeseen on? <small>Vapaaehtoinen</small></legend>
+          <div class="q-chips">
+            {['Hyvä kulkuyhteys', 'Ahdas tontti tai kulkureitti', 'En osaa sanoa'].map((v) => (
+              <label class="q-chip"><input class="sr-only" type="radio" name="kulkuyhteys" value={v} />{v}</label>
+            ))}
+          </div>
+        </fieldset>
+      </div>
+
+      <!-- Vaihe 4 -->
+      <div class="q-step" data-step="3" hidden>
+        <div class="q-question">
+          <label class="q-label" for="q-sijainti">Missä kohde sijaitsee?</label>
+          <div class="q-input-icon">
+            <Ikoni nimi="sijainti" />
+            <input id="q-sijainti" name="sijainti" type="text" autocomplete="address-level2" placeholder="Paikkakunta tai postinumero" aria-describedby="q-sijainti-status" data-location />
+          </div>
+          <div class="q-chips q-towns">
+            {paikkakunnat.map((p) => <button type="button" class="q-chip" data-town={p}>{p}</button>)}
+          </div>
+          <p class="q-status" id="q-sijainti-status" aria-live="polite" data-location-status></p>
+          <p class="q-error" data-error="sijainti" hidden>Kerro paikkakunta tai postinumero.</p>
+        </div>
+        <fieldset class="q-question">
+          <legend>Milloin työ olisi ajankohtainen?</legend>
+          <div class="q-chips">
+            {aikataulut.map((a) => (
+              <label class="q-chip"><input class="sr-only" type="radio" name="aikataulu" value={a} />{a}</label>
+            ))}
+          </div>
+          <p class="q-error" data-error="aikataulu" hidden>Valitse toivottu aikataulu.</p>
+        </fieldset>
+      </div>
+
+      <!-- Vaihe 5 -->
+      <div class="q-step" data-step="4" hidden>
+        <fieldset class="q-question">
+          <legend>Yhteydenottotapa</legend>
+          <div class="q-method">
+            <label class="q-chip q-chip-large"><input class="sr-only" type="radio" name="tapa" value="puhelin" checked /><Ikoni nimi="puhelin" /> Soittakaa minulle</label>
+            <label class="q-chip q-chip-large"><input class="sr-only" type="radio" name="tapa" value="sahkoposti" /><Ikoni nimi="posti" /> Vastatkaa sähköpostilla</label>
+          </div>
+        </fieldset>
+        <div class="q-fields">
+          <div class="q-field">
+            <label class="q-label" for="q-nimi">Nimi <small>Pakollinen</small></label>
+            <input id="q-nimi" name="nimi" type="text" autocomplete="name" placeholder="Etu- ja sukunimi" />
+            <p class="q-error" data-error="nimi" hidden>Kerro nimesi.</p>
+          </div>
+          <div class="q-field">
+            <label class="q-label" for="q-puhelin">Puhelinnumero <small data-req="puhelin">Pakollinen</small></label>
+            <input id="q-puhelin" name="puhelin" type="tel" autocomplete="tel" inputmode="tel" />
+            <p class="q-error" data-error="puhelin" hidden></p>
+          </div>
+          <div class="q-field">
+            <label class="q-label" for="q-email">Sähköposti <small data-req="sahkoposti">Vapaaehtoinen</small></label>
+            <input id="q-email" name="email" type="email" autocomplete="email" placeholder="nimi@esimerkki.fi" />
+            <p class="q-error" data-error="email" hidden></p>
+          </div>
+          <div class="q-field q-field-wide">
+            <label class="q-label" for="q-viesti">Lisätietoja <small>Vapaaehtoinen</small></label>
+            <textarea id="q-viesti" name="viesti" rows="4" placeholder="Esimerkiksi työn laajuus, kohteen olosuhteet tai sopiva aika soitolle."></textarea>
+          </div>
+        </div>
+        <p class="q-note">Voit liittää kuvia kohteesta sähköpostiviestiin, joka avautuu lähetyksen jälkeen.</p>
+      </div>
+    </div>
+
+    <div class="q-actions" data-actions>
+      <button type="button" class="q-back" data-back hidden><Ikoni nimi="vasen" /> Takaisin</button>
+      <span class="q-actions-note" data-actions-note>Napauta vastaus, niin jatketaan.</span>
+      <button type="submit" class="button button-amber q-next" data-next>Jatka <Ikoni nimi="oikea" /></button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const PIRKANMAA = ['kangasala','tampere','nokia','ylojarvi','lempaala','pirkkala','valkeakoski','akaa','palkane','orivesi','hameenkyro','ikaalinen','parkano','kuru','virrat','ruovesi','mantta-vilppula','mantta','vilppula','juupajoki','urjala','punkalaidun','sastamala','vesilahti','kihnio'];
+  const OTSIKOT = ['Mitä maanrakennustyötä tarvitset?', 'Millainen kohde on kyseessä?', 'Kerro vähän työstä.', 'Missä ja milloin?', 'Miten tavoitamme sinut?'];
+  const VIHJEET = [
+    'Valitse palvelu, niin siirrymme suoraan eteenpäin.',
+    'Valitse kohdetta parhaiten kuvaava vaihtoehto.',
+    'Valitse työn tarpeet. Pinta-alan ja muut tiedot voit täydentää halutessasi.',
+    'Sijainti ja aikataulu auttavat suunnittelemaan toteutuksen.',
+    'Viimeinen vaihe. Valitse, miten haluat meidän ottavan yhteyttä.',
+  ];
+  const VAIHEET = ['Palvelu', 'Kohde', 'Tarpeet', 'Sijainti', 'Yhteystiedot'];
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const norm = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-');
+
+  document.querySelectorAll<HTMLElement>('[data-quote]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const $$ = <T extends Element = HTMLElement>(sel: string) => Array.from(root.querySelectorAll<T>(sel));
+    const tyot: Record<string, string[]> = JSON.parse(root.dataset.tyot!);
+    const email = root.dataset.email!;
+    const steps = $$('[data-step]');
+    const stage = $('[data-stage]');
+    let step = 0;
+    let maxStep = 0;
+    let area: number | null = null;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const val = (name: string) => (form.elements.namedItem(name) as RadioNodeList | HTMLInputElement | null)?.value?.trim() ?? '';
+    const checkedLabel = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.dataset.label ?? val(name);
+    const work = () => $$<HTMLInputElement>('[data-work] input:checked').map((i) => i.value);
+
+    function setError(key: string, msg: string | null) {
+      const el = root.querySelector<HTMLElement>(`[data-error="${key}"]`);
+      if (!el) return;
+      if (msg) el.textContent = msg;
+      el.hidden = !msg;
+      const input = el.closest('.q-field, .q-question')?.querySelector('input:not([type=radio]):not([type=checkbox])');
+      input?.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    }
+
+    function validate(s: number) {
+      const errs: Record<string, string> = {};
+      if (s === 0 && !val('palvelu')) errs.palvelu = 'Valitse palvelu.';
+      if (s === 1 && !val('kohde')) errs.kohde = 'Valitse kohteen tyyppi.';
+      if (s === 2 && work().length === 0) errs.tyo = 'Valitse vähintään yksi vaihtoehto.';
+      if (s === 3) {
+        if (!val('sijainti')) errs.sijainti = 'Kerro paikkakunta tai postinumero.';
+        if (!val('aikataulu')) errs.aikataulu = 'Valitse toivottu aikataulu.';
+      }
+      if (s === 4) {
+        const method = val('tapa');
+        const phone = val('puhelin');
+        const mail = val('email');
+        if (!val('nimi')) errs.nimi = 'Kerro nimesi.';
+        if (method === 'puhelin' && !phone) errs.puhelin = 'Anna puhelinnumero, niin soitamme.';
+        else if (phone && phone.replace(/\D/g, '').length < 6) errs.puhelin = 'Tarkista puhelinnumero.';
+        if (method === 'sahkoposti' && !mail) errs.email = 'Anna sähköpostiosoite.';
+        else if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) errs.email = 'Tarkista sähköpostiosoite.';
+      }
+      ['palvelu', 'kohde', 'tyo', 'sijainti', 'aikataulu', 'nimi', 'puhelin', 'email'].forEach((k) => setError(k, errs[k] ?? null));
+      return Object.keys(errs).length === 0;
+    }
+
+    function renderWork() {
+      const box = $('[data-work]');
+      const service = val('palvelu');
+      const prev = new Set(work());
+      box.innerHTML = '';
+      (tyot[service] ?? []).forEach((t) => {
+        const label = document.createElement('label');
+        label.className = 'q-chip';
+        label.innerHTML = `<input class="sr-only" type="checkbox" name="tyo" value="${t}"${prev.has(t) ? ' checked' : ''}>${t}`;
+        box.append(label);
+      });
+      $('[data-area-question]').hidden = service === 'putket';
+    }
+
+    function summary() {
+      const set = (n: string, v: string) => {
+        const li = root.querySelector<HTMLElement>(`[data-summary="${n}"]`)!;
+        li.querySelector('strong')!.textContent = v || 'Ei vielä valittu';
+        li.classList.toggle('is-set', !!v);
+      };
+      set('Palvelu', checkedLabel('palvelu'));
+      set('Kohde', val('kohde'));
+      set('Tarpeet', work().join(', '));
+      set('Sijainti', val('sijainti'));
+      set('Aikataulu', val('aikataulu'));
+    }
+
+    function show(s: number, dir = 1) {
+      step = s;
+      maxStep = Math.max(maxStep, s);
+      steps.forEach((el, i) => (el.hidden = i !== s));
+      $('[data-heading]').textContent = OTSIKOT[s];
+      $('[data-hint]').textContent = VIHJEET[s];
+      $('[data-step-label]').textContent = `VAIHE ${pad(s + 1)} / 05 · ${VAIHEET[s]}`;
+      $('[data-step-count]').textContent = `Vaihe ${s + 1} / 5`;
+      $$<HTMLButtonElement>('[data-goto]').forEach((b, i) => {
+        b.disabled = i > maxStep;
+        const li = b.parentElement!;
+        li.className = i < s || (i <= maxStep && i !== s) ? 'is-done' : i === s ? 'is-current' : '';
+        if (i === s) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      });
+      $('[data-back]').hidden = s === 0;
+      const next = $('[data-next]');
+      next.firstChild!.textContent = s === 4 ? 'Lähetä tarjouspyyntö ' : 'Jatka ';
+      $('[data-actions-note]').hidden = s > 1;
+      if (s === 2) renderWork();
+      if (!reduce) {
+        stage.dataset.dir = dir > 0 ? 'forward' : 'back';
+        stage.classList.remove('is-animating');
+        void stage.offsetWidth;
+        stage.classList.add('is-animating');
+      }
+      summary();
+    }
+
+    function focusHeading() {
+      const h = $('[data-heading]');
+      h.focus({ preventScroll: true });
+      const top = form.getBoundingClientRect().top;
+      if (top < 80) window.scrollTo({ top: window.scrollY + top - 96, behavior: reduce ? 'auto' : 'smooth' });
+    }
+
+    function buildMessage() {
+      const kohde = [
+        `Palvelu: ${checkedLabel('palvelu')}`,
+        `Kohde: ${val('kohde')}`,
+        `Työhön kuuluu: ${work().join(', ')}`,
+        area !== null && val('palvelu') !== 'putket' ? `Pinta-ala (arvio): ${area >= 2000 ? 'yli 2000' : area} m²` : '',
+        val('suunnitelmat') ? `Suunnitelmat: ${val('suunnitelmat')}` : '',
+        val('kulkuyhteys') ? `Kulkuyhteys: ${val('kulkuyhteys')}` : '',
+        `Sijainti: ${val('sijainti')}`,
+        `Aikataulu: ${val('aikataulu')}`,
+      ].filter(Boolean);
+      const yhteys = [
+        `Nimi: ${val('nimi')}`,
+        val('puhelin') ? `Puhelin: ${val('puhelin')}` : '',
+        val('email') ? `Sähköposti: ${val('email')}` : '',
+        `Toivottu yhteydenotto: ${val('tapa') === 'puhelin' ? 'Puhelimitse' : 'Sähköpostilla'}`,
+      ].filter(Boolean);
+      const lines = ['TARJOUSPYYNTÖ – fromcom.fi', '', ...kohde, '', ...yhteys];
+      if (val('viesti')) lines.push('', 'Lisätietoja:', val('viesti'));
+      const subject = `Tarjouspyyntö: ${checkedLabel('palvelu')}, ${val('sijainti')}`;
+      return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
+    }
+
+    // Automaattinen siirtyminen korttivalinnasta (vaiheet 1–2)
+    root.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.name === 'palvelu') renderWork();
+      if (t.name === 'tapa') {
+        const phoneReq = t.value === 'puhelin';
+        $('[data-req="puhelin"]').textContent = phoneReq ? 'Pakollinen' : 'Vapaaehtoinen';
+        $('[data-req="sahkoposti"]').textContent = phoneReq ? 'Vapaaehtoinen' : 'Pakollinen';
+        setError('puhelin', null); setError('email', null);
+      }
+      summary();
+      if (t.dataset.auto !== undefined && validate(step)) {
+        setTimeout(() => { show(step + 1); focusHeading(); }, reduce ? 0 : 220);
+      }
+    });
+    // Valitun kortin uudelleennapautus vie myös eteenpäin
+    let preChecked: HTMLInputElement | null = null;
+    root.addEventListener('pointerdown', (e) => {
+      const input = (e.target as HTMLElement).closest('label')?.querySelector<HTMLInputElement>('input[data-auto]') ?? null;
+      preChecked = input?.checked ? input : null;
+    });
+    root.addEventListener('click', (e) => {
+      const input = e.target as HTMLInputElement;
+      if (input.dataset?.auto === undefined || input !== preChecked) return;
+      preChecked = null;
+      if (steps[step].contains(input)) { show(step + 1); focusHeading(); }
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validate(step)) {
+        if (!reduce) { form.classList.remove('is-shake'); void form.offsetWidth; form.classList.add('is-shake'); }
+        root.querySelector<HTMLElement>('.q-error:not([hidden])')?.closest('.q-field, .q-question, .q-step')?.querySelector<HTMLElement>('input, button')?.focus();
+        return;
+      }
+      if (step < 4) { show(step + 1); focusHeading(); return; }
+      // LÄHETYS: vaihdetaan tähän fetch()-kutsu taustapalveluun, kun se on valmis.
+      const href = buildMessage();
+      $<HTMLAnchorElement>('[data-mailto]').href = href;
+      stage.hidden = true; $('[data-actions]').hidden = true; $('[data-done]').hidden = false;
+      $('[data-done] h3').focus();
+      window.location.href = href;
+    });
+
+    $('[data-back]').addEventListener('click', () => { show(step - 1, -1); focusHeading(); });
+    $$<HTMLButtonElement>('[data-goto]').forEach((b) => b.addEventListener('click', () => { show(Number(b.dataset.goto), Number(b.dataset.goto) > step ? 1 : -1); focusHeading(); }));
+    $('[data-edit]').addEventListener('click', () => { stage.hidden = false; $('[data-actions]').hidden = false; $('[data-done]').hidden = true; show(4, -1); focusHeading(); });
+
+    // Pinta-ala
+    const range = $<HTMLInputElement>('[data-area-range]');
+    const out = $('[data-area-out]');
+    const setArea = (v: number | null) => {
+      area = v;
+      out.textContent = v === null ? 'Ei valittu' : `${v >= 2000 ? '2000+' : v} m²`;
+      root.querySelector('.q-area')!.classList.toggle('is-empty', v === null);
+      if (v !== null) range.value = String(v);
+      range.style.setProperty('--fill', v === null ? '0%' : `${((v - 20) / (2000 - 20)) * 100}%`);
+      $$<HTMLButtonElement>('[data-area-preset]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.areaPreset) === v)));
+      $('[data-area-clear]').hidden = v === null;
+    };
+    range.addEventListener('input', () => setArea(Number(range.value)));
+    $$<HTMLButtonElement>('[data-area-preset]').forEach((b) => b.addEventListener('click', () => setArea(Number(b.dataset.areaPreset))));
+    $('[data-area-clear]').addEventListener('click', () => setArea(null));
+    setArea(null);
+
+    // Sijainti
+    const loc = $<HTMLInputElement>('[data-location]');
+    const status = $('[data-location-status]');
+    const updateLoc = () => {
+      const v = loc.value.trim();
+      const n = norm(v);
+      const known = PIRKANMAA.includes(n) || /^3[3-9]\d{3}$/.test(v);
+      status.textContent = !v ? '' : known ? 'Palvelemme koko Pirkanmaalla.' : 'Palvelemme koko Pirkanmaalla. Kohteen sijainti tarkennetaan yhteydenotolla.';
+      status.classList.toggle('is-ok', !!v && known);
+      $$<HTMLButtonElement>('[data-town]').forEach((b) => b.setAttribute('aria-pressed', String(norm(b.dataset.town!) === n)));
+      summary();
+    };
+    loc.addEventListener('input', updateLoc);
+    $$<HTMLButtonElement>('[data-town]').forEach((b) => b.addEventListener('click', () => { loc.value = b.dataset.town!; setError('sijainti', null); updateLoc(); }));
+
+    show(0);
+  });
+</script>

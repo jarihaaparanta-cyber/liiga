@@ -1,0 +1,58 @@
+---
+// Kelluva pikaopas oikeassa alakulmassa (demosivun mukaan).
+import Ikoni from './Ikoni.astro';
+import { yhteyshenkilot, yritys } from '../data/sivusto.js';
+const [arto, vaino] = yhteyshenkilot;
+const aiheet = [
+  ['Palvelut', 'Teemme rakennusten perustustöitä, kunnallisteknisiä töitä, vesi- ja viemäritöitä, piha- ja viherrakentamista, tonttien raivauksia sekä rakennusten purkutöitä.'],
+  ['Toiminta-alue', 'Toimimme Kangasalta käsin koko Pirkanmaalla. Palvelemme sekä yksityisiä että yrityksiä.'],
+  ['Koneohjaus', 'Hyödynnämme Novatron 3D-koneohjausta. Se tukee suunnitelmien mukaista toteutusta ja auttaa vähentämään turhaa kaivamista.'],
+  ['Yritys', 'FromCom Oy toimii Kangasalta käsin. Palvelemme yksityisiä ja yrityksiä pienistä maanrakennuskohteista suurempiin urakoihin.'],
+  ['Yhteystiedot', `${arto.nimi}: ${arto.puhelin}. ${vaino.nimi}: ${vaino.puhelin}. Osoitteemme on ${yritys.katuosoite}, ${yritys.postinumero} ${yritys.kaupunki}.`],
+];
+---
+<aside class="guide" data-guide>
+  <div class="guide-panel" id="pikaopas" hidden>
+    <div class="guide-head">
+      <div><span class="eyebrow">FROMCOM OY</span><strong>Miten voimme auttaa?</strong></div>
+      <button type="button" class="icon-button" aria-label="Sulje pikaopas" data-guide-close><Ikoni nimi="sulje" koko={20} /></button>
+    </div>
+    <p>Valitse aihe, niin löydät olennaiset tiedot nopeasti.</p>
+    <div class="guide-options">
+      {aiheet.map(([a], i) => <button type="button" aria-pressed="false" data-topic={i}>{a}</button>)}
+    </div>
+    <p class="guide-answer" aria-live="polite" data-answer hidden></p>
+    <a class="button button-dark" href="#tarjous" data-guide-cta>Pyydä tarjous <Ikoni nimi="nuoli" /></a>
+    <a class="guide-call" href={`tel:${arto.tel}`}><Ikoni nimi="puhelin" koko={16} /> Soita Artolle</a>
+    <script type="application/json" data-answers set:html={JSON.stringify(aiheet.map(([, v]) => v))} />
+  </div>
+  <button type="button" class="guide-toggle" aria-label="Avaa pikaopas" aria-expanded="false" aria-controls="pikaopas" data-guide-toggle>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+</aside>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-guide]').forEach((root) => {
+    const panel = root.querySelector<HTMLElement>('.guide-panel')!;
+    const toggle = root.querySelector<HTMLButtonElement>('[data-guide-toggle]')!;
+    const answers: string[] = JSON.parse(root.querySelector('[data-answers]')!.textContent!);
+    const answer = root.querySelector<HTMLElement>('[data-answer]')!;
+    const set = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Sulje pikaopas' : 'Avaa pikaopas');
+      if (open) panel.querySelector<HTMLElement>('[data-topic]')?.focus();
+    };
+    toggle.addEventListener('click', () => set(panel.hidden));
+    root.querySelector('[data-guide-close]')!.addEventListener('click', () => { set(false); toggle.focus(); });
+    root.querySelector('[data-guide-cta]')!.addEventListener('click', () => set(false));
+    root.querySelectorAll<HTMLButtonElement>('[data-topic]').forEach((b) =>
+      b.addEventListener('click', () => {
+        root.querySelectorAll('[data-topic]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        answer.textContent = answers[Number(b.dataset.topic)];
+        answer.hidden = false;
+      }),
+    );
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { set(false); toggle.focus(); } });
+  });
+</script>

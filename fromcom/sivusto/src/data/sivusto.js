@@ -23,9 +23,8 @@ export const yhteyshenkilot = [
   { nimi: 'Väinö From', puhelin: '0400 170 169', tel: '+358400170169', email: 'vaino.from@fromcom.fi' },
 ];
 
-// Mihin "Pyydä tarjous" -painikkeet vievät. Vaihdetaan etusivun
-// tarjouslomakkeeseen (/#tarjous), kun etusivu on siirretty tähän projektiin.
-export const TARJOUS_URL = '/ota-yhteytta/#tarjous';
+// Mihin "Pyydä tarjous" -painikkeet vievät: etusivun tarjouslomake.
+export const TARJOUS_URL = '/#tarjous';
 
 export const valikko = [
   { nimi: 'Etusivu', href: '/' },

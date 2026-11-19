@@ -17,7 +17,7 @@ npm run build    # valmis sivusto kansioon dist/
 
 | Osoite | Tiedosto |
 | --- | --- |
-| `/` | `src/pages/index.astro` – **väliaikainen**, korvataan demosivun etusivulla |
+| `/` | `src/pages/index.astro` – etusivu, tarjouslomake `src/components/Tarjouslomake.astro` |
 | `/palvelut/` | `src/pages/palvelut/index.astro` |
 | `/palvelut/<palvelu>/` (6 kpl) | `src/pages/palvelut/[slug].astro` – sisältö `src/data/sivusto.js` |
 | `/kalusto/` | `src/pages/kalusto.astro` |
@@ -39,7 +39,16 @@ Kuvat optimoidaan automaattisesti (`src/assets/kuvat/`).
 - Arton ja Väinön tehtävänimikkeet, jos halutaan näkyviin
 - Palvelusivujen tekstit tarkistettavaksi
 
+## Tarjouslomake
+
+5-vaiheinen lomake etusivulla (`#tarjous`). Toistaiseksi lähetys kokoaa
+tarjouspyynnön ja avaa sen valmiina sähköpostiviestinä Artolle (mailto),
+koska sivustolla ei vielä ole taustapalvelua. Kuvat asiakas liittää itse
+sähköpostiin.
+
 ## Seuraavat vaiheet
 
-1. Etusivu demosivun mukaiseksi (palveluhaitari, referenssit, prosessi, kartta, kumppanit)
-2. 5-vaiheinen tarjouslomake ja sen lähetys sähköpostiin – sen jälkeen `TARJOUS_URL` → `/#tarjous`
+1. Lomakkeen suora lähetys taustapalvelun kautta (kohta `LÄHETYS` tiedostossa
+   `src/components/Tarjouslomake.astro`), roskapostisuojaus ja kuvien liittäminen
+2. Asiakkaan tarkistus teksteille ja täydennettävät tiedot (yllä)
+3. Julkaisu ja fromcom.fi-osoitteen ohjaus uuteen sivustoon
