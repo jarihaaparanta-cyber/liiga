@@ -26,6 +26,11 @@ export const yhteyshenkilot = [
 // Mihin "Pyydä tarjous" -painikkeet vievät: etusivun tarjouslomake.
 export const TARJOUS_URL = '/#tarjous';
 
+// Mihin tarjouslomakkeen viesti lähetetään. Oletuksena Artolle.
+// Testiä varten osoitteen voi vaihtaa ympäristömuuttujalla PUBLIC_TARJOUS_EMAIL
+// (esim. tiedostoon .env, jota ei tallenneta GitHubiin).
+export const TARJOUS_EMAIL = import.meta.env.PUBLIC_TARJOUS_EMAIL || 'arto.from@fromcom.fi';
+
 export const valikko = [
   { nimi: 'Etusivu', href: '/' },
   { nimi: 'Palvelut', href: '/palvelut/' },

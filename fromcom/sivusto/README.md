@@ -42,9 +42,17 @@ Kuvat optimoidaan automaattisesti (`src/assets/kuvat/`).
 ## Tarjouslomake
 
 5-vaiheinen lomake etusivulla (`#tarjous`). Toistaiseksi lähetys kokoaa
-tarjouspyynnön ja avaa sen valmiina sähköpostiviestinä Artolle (mailto),
+tarjouspyynnön ja avaa sen valmiina sähköpostiviestinä (mailto) osoitteeseen `TARJOUS_EMAIL` (`src/data/sivusto.js`),
 koska sivustolla ei vielä ole taustapalvelua. Kuvat asiakas liittää itse
 sähköpostiin.
+
+Oletusvastaanottaja on Arto. Testiä varten vastaanottajan voi vaihtaa
+ilman koodimuutosta: luo tiedosto `.env` (ei tallennu GitHubiin) tai aseta
+julkaisupalvelun asetuksiin
+
+```
+PUBLIC_TARJOUS_EMAIL=oma@osoite.fi
+```
 
 ## Seuraavat vaiheet
 

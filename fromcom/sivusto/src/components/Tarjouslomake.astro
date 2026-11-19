@@ -1,10 +1,10 @@
 ---
 // 5-vaiheinen tarjouslomake demosivun mukaan.
 // Lähetys: toistaiseksi lomake kokoaa tarjouspyynnön ja avaa sen valmiina
-// sähköpostiviestinä (mailto) Artolle. Kun taustapalvelu on tehty, lähetys
+// sähköpostiviestinä (mailto) osoitteeseen TARJOUS_EMAIL (src/data/sivusto.js). Kun taustapalvelu on tehty, lähetys
 // vaihdetaan suoraksi lähetykseksi kohdassa "LÄHETYS" alla.
 import Ikoni from './Ikoni.astro';
-import { yhteyshenkilot } from '../data/sivusto.js';
+import { yhteyshenkilot, TARJOUS_EMAIL } from '../data/sivusto.js';
 
 const palvelut = [
   { id: 'perustukset', nimi: 'Rakennusten perustustyöt', vihje: 'Rakennuksen pohjatyöt' },
@@ -38,7 +38,7 @@ const vihjeet = [
 const vastaanottaja = yhteyshenkilot[0];
 const pad = (n) => String(n).padStart(2, '0');
 ---
-<div class="q" data-quote data-email={vastaanottaja.email} data-tyot={JSON.stringify(tyot)}>
+<div class="q" data-quote data-email={TARJOUS_EMAIL} data-tyot={JSON.stringify(tyot)}>
   <aside class="q-summary" aria-label="Tarjouspyyntösi">
     <div class="q-summary-head">
       <span class="eyebrow">TARJOUSPYYNTÖSI</span>
@@ -69,7 +69,7 @@ const pad = (n) => String(n).padStart(2, '0');
 
     <div class="q-done" data-done hidden>
       <h3 tabindex="-1">Tarjouspyyntösi on valmis.</h3>
-      <p>Sähköpostiohjelmasi avautui valmiin viestin kanssa osoitteeseen <strong>{vastaanottaja.email}</strong>. Lähetä viesti sieltä, niin otamme sinuun yhteyttä.</p>
+      <p>Sähköpostiohjelmasi avautui valmiin viestin kanssa osoitteeseen <strong>{TARJOUS_EMAIL}</strong>. Lähetä viesti sieltä, niin otamme sinuun yhteyttä.</p>
       <p>Jos sähköposti ei auennut, soita suoraan: <a href={`tel:${vastaanottaja.tel}`}>{vastaanottaja.puhelin}</a>.</p>
       <div class="buttons">
         <a class="button button-dark" data-mailto href="#">Avaa sähköposti uudelleen <Ikoni nimi="posti" /></a>
