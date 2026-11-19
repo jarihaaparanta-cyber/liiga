@@ -1,0 +1,62 @@
+---
+import { Image } from 'astro:assets';
+import Sivupohja from '../layouts/Sivupohja.astro';
+import SivuHero from '../components/SivuHero.astro';
+import Galleria from '../components/Galleria.astro';
+import Tarjous from '../components/Tarjous.astro';
+import hero from '../assets/kuvat/IMG_20220428_174220470.jpg';
+import novatron from '../assets/kuvat/IMG-20220524-WA0005.webp';
+import sininen from '../assets/kuvat/Galleria_sininen.webp';
+import kobelco from '../assets/kuvat/Fromcom_hero.webp';
+import oranssi from '../assets/kuvat/IMG-20230131-WA0004.jpg';
+import raivaus from '../assets/kuvat/IMG_20220818_181338203.webp';
+import tyomaa from '../assets/kuvat/FromCom_2.webp';
+import kaivu from '../assets/kuvat/FromCom_1.webp';
+
+// TÄYDENNETÄÄN: konekohtaiset tiedot (merkki, malli, paino, työlaitteet) asiakkaalta.
+const kuvat = [
+  { kuva: kobelco, alt: 'Turkoosi Kobelco-kaivinkone kuormaa maa-ainesta pihalla', otsikko: 'Kaivinkone pihatyömaalla', tunniste: 'KALUSTO' },
+  { kuva: sininen, alt: 'FromComin turkoosi kaivinkone metsäisellä maanrakennustyömaalla', otsikko: 'Kalustoa työmaalla', tunniste: 'KALUSTO' },
+  { kuva: oranssi, alt: 'Kaksi työvaatteisiin pukeutunutta miestä oranssin kaivinkoneen ohjaamon luona', otsikko: 'Oranssi kaivinkone', tunniste: 'KALUSTO' },
+  { kuva: hero, alt: 'Oranssi kaivinkone ja työntekijä tärylevyn kanssa rakennuksen sorapohjalla', otsikko: 'Tiivistys sorapohjalla', tunniste: 'PERUSTUKSET' },
+  { kuva: raivaus, alt: 'Kaivinkone raivatulla tontilla metsäisessä ympäristössä', otsikko: 'Tontin raivaus', tunniste: 'RAIVAUS' },
+  { kuva: kaivu, alt: 'FromComin kaivinkone maanrakennustyömaalla', otsikko: 'Kaivutyöt', tunniste: 'MAANRAKENNUS' },
+  { kuva: tyomaa, alt: 'Maanrakennustyömaa, kaivinkone ja järvimaisema', otsikko: 'Työmaa järven rannalla', tunniste: 'TYÖMAA' },
+  { kuva: novatron, alt: 'Novatron-koneohjauksen näyttö kaivinkoneen ohjaamossa', otsikko: 'Novatron 3D -koneohjaus', tunniste: 'KONEOHJAUS' },
+];
+---
+<Sivupohja otsikko="Kalusto" kuvaus="FromCom Oy:n maanrakennuskalusto ja Novatron 3D-koneohjaus. Kalusto työn vaatimusten mukaan koko Pirkanmaalla.">
+  <SivuHero
+    kuva={hero}
+    kuvaAlt="Oranssi kaivinkone ja työntekijä tärylevyn kanssa rakennuksen sorapohjalla"
+    ylaotsikko="FROMCOM OY / KALUSTO"
+    otsikko="Kalusto työn vaatimusten mukaan."
+    ingressi="Työn vaatimuksiin sopiva kalusto ja moderni koneohjaustekniikka tukevat tehokasta ja tarkkaa toteutusta."
+    murupolku={[{ nimi: 'Kalusto' }]}
+  />
+
+  <section class="section">
+    <div class="wrap split">
+      <div class="prose">
+        <span class="eyebrow">01 / KONEOHJAUS</span>
+        <h2 style="margin-top:18px">Novatron 3D -koneohjaus.</h2>
+        <p>Hyödynnämme töissämme Novatron 3D-koneohjausta. Se näyttää kuljettajalle suunnitellut korot ja kaltevuudet ohjaamon näytöllä, jolloin työ voidaan tehdä suoraan suunnitelman mukaan.</p>
+        <p>Tarkka työskentely vähentää turhaa kaivamista ja ylimääräisiä työvaiheita. Se näkyy sekä aikataulussa että lopputuloksessa.</p>
+      </div>
+      <div class="split-media"><Image src={novatron} alt="Novatron-koneohjauksen näyttö kaivinkoneen ohjaamossa" widths={[600, 1000]} sizes="(max-width: 860px) 100vw, 50vw" loading="lazy" /></div>
+    </div>
+  </section>
+
+  <section class="section section-dark">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">02 / VOIMAA TYÖMAALLE</span>
+        <h2>Koneet työmaalla</h2>
+        <p>Kaivinkoneet ja työlaitteet valitaan kohteen ja työn mukaan, pienistä pihatöistä suurempiin urakoihin.</p>
+      </div>
+      <Galleria kuvat={kuvat} />
+    </div>
+  </section>
+
+  <Tarjous otsikko="Sopiiko kalustomme kohteeseesi?" teksti="Kerro kohteesta ja kulkuyhteyksistä, niin valitaan työhön sopiva kalusto." />
+</Sivupohja>

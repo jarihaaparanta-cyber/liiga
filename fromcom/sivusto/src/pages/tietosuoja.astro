@@ -1,0 +1,45 @@
+---
+import Sivupohja from '../layouts/Sivupohja.astro';
+import SivuHero from '../components/SivuHero.astro';
+import { yritys, yhteyshenkilot } from '../data/sivusto.js';
+---
+<Sivupohja otsikko="Tietosuoja" kuvaus="FromCom Oy:n tietosuojaseloste: miten käsittelemme yhteydenottojen ja tarjouspyyntöjen henkilötietoja.">
+  <SivuHero kompakti ylaotsikko="FROMCOM OY / TIETOSUOJA" otsikko="Tietosuojaseloste" murupolku={[{ nimi: 'Tietosuoja' }]} />
+
+  <section class="section">
+    <div class="wrap doc">
+      <p class="draft-note"><strong>Luonnos.</strong> Tarkistetaan ja täydennetään yhdessä FromCom Oy:n kanssa ennen sivuston julkaisua (mm. Y-tunnus, säilytysajat ja käytetyt palveluntarjoajat).</p>
+
+      <p>Tämä seloste kertoo, miten {yritys.nimi} käsittelee henkilötietoja, kun otat meihin yhteyttä tai lähetät tarjouspyynnön verkkosivujemme kautta. Seloste perustuu EU:n yleiseen tietosuoja-asetukseen (2016/679).</p>
+
+      <h2>1. Rekisterinpitäjä</h2>
+      <p>{yritys.nimi}<br />{yritys.katuosoite}, {yritys.postinumero} {yritys.kaupunki}<br />Y-tunnus: [täydennetään]</p>
+
+      <h2>2. Yhteyshenkilö tietosuoja-asioissa</h2>
+      <p>{yhteyshenkilot[0].nimi}, {yhteyshenkilot[0].puhelin}, <a href={`mailto:${yhteyshenkilot[0].email}`}>{yhteyshenkilot[0].email}</a></p>
+
+      <h2>3. Mitä tietoja käsittelemme</h2>
+      <ul>
+        <li>Nimi, puhelinnumero ja sähköpostiosoite</li>
+        <li>Kohteen sijainti (paikkakunta tai postinumero)</li>
+        <li>Tarjouspyynnön tiedot: palvelu, kohde, työn tarpeet, aikataulu ja lisätiedot</li>
+        <li>Kuvat, jotka liität tarjouspyyntöön</li>
+      </ul>
+
+      <h2>4. Käsittelyn tarkoitus ja peruste</h2>
+      <p>Käytämme tietoja yhteydenottoihin vastaamiseen, tarjousten laatimiseen ja mahdollisen sopimuksen valmisteluun. Käsittelyn perusteena on sopimuksen valmistelu asiakkaan pyynnöstä sekä oikeutettu etumme asiakassuhteen hoitamiseen.</p>
+
+      <h2>5. Säilytysaika</h2>
+      <p>Säilytämme tarjouspyyntöjen tiedot niin kauan kuin se on tarpeen tarjouksen ja asiakassuhteen hoitamiseksi, ja poistamme tarpeettomat tiedot säännöllisesti. [Tarkka säilytysaika täydennetään.]</p>
+
+      <h2>6. Tietojen luovutukset</h2>
+      <p>Emme myy tai luovuta tietoja kolmansille osapuolille markkinointitarkoituksiin. Tietoja voivat käsitellä puolestamme verkkosivujen ja sähköpostin palveluntarjoajat. [Palveluntarjoajat täydennetään.]</p>
+
+      <h2>7. Evästeet</h2>
+      <p>Sivusto ei käytä seuranta- tai markkinointievästeitä. [Päivitetään, jos sivustolle lisätään esimerkiksi kävijäseuranta.]</p>
+
+      <h2>8. Sinun oikeutesi</h2>
+      <p>Sinulla on oikeus tarkastaa itseäsi koskevat tiedot, pyytää niiden korjaamista tai poistamista sekä vastustaa tai rajoittaa käsittelyä. Pyynnöt voit lähettää yllä mainitulle yhteyshenkilölle. Sinulla on myös oikeus tehdä valitus tietosuojavaltuutetun toimistolle (tietosuoja.fi).</p>
+    </div>
+  </section>
+</Sivupohja>

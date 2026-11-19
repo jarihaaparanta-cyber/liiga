@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets';
+import Sivupohja from '../../layouts/Sivupohja.astro';
+import SivuHero from '../../components/SivuHero.astro';
+import Tarjous from '../../components/Tarjous.astro';
+import Ikoni from '../../components/Ikoni.astro';
+import { palvelut } from '../../data/sivusto.js';
+import hero from '../../assets/kuvat/Galleria_sininen.webp';
+---
+<Sivupohja otsikko="Palvelut" kuvaus="FromCom Oy:n maanrakennuspalvelut Pirkanmaalla: perustustyöt, kunnallistekniikka, vesi- ja viemärityöt, piha- ja viherrakentaminen, tonttien raivaukset ja purkutyöt.">
+  <SivuHero
+    kuva={hero}
+    kuvaAlt="FromComin turkoosi kaivinkone metsäisellä maanrakennustyömaalla"
+    ylaotsikko="FROMCOM OY / PALVELUT"
+    otsikko="Maanrakennuksen kaikki vaiheet."
+    ingressi="Monipuoliset maanrakennuspalvelut rakentamisen eri vaiheisiin. Yksityisille ja yrityksille, koko Pirkanmaan alueella."
+    murupolku={[{ nimi: 'Palvelut' }]}
+  />
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">01 / PALVELUT RAKENTAMISEN ERI VAIHEISIIN</span>
+        <h2>Maanrakennuspalvelut</h2>
+        <p>Teemme pienet ja suuret maanrakennustyöt pohjatöistä viimeistelyyn. Valitse palvelu ja lue lisää.</p>
+      </div>
+      <div class="cards">
+        {palvelut.map((p, i) => (
+          <a class="card" href={`/palvelut/${p.slug}/`}>
+            <div class="card-media"><Image src={p.kuva} alt={p.kuvaAlt} widths={[480, 800]} sizes="(max-width: 620px) 100vw, (max-width: 980px) 50vw, 33vw" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-num">0{i + 1} / 06</span>
+              <h3>{p.nimi}</h3>
+              <p>{p.lyhyt}</p>
+              <span class="card-more">Tutustu palveluun <Ikoni nimi="nuoli" koko={16} /></span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark">
+    <div class="wrap split is-top">
+      <div class="section-head" style="margin:0">
+        <span class="eyebrow">02 / NOVATRON 3D-KONEOHJAUS</span>
+        <h2>Tarkasti kerralla oikein.</h2>
+      </div>
+      <div class="prose">
+        <p>Hyödynnämme töissämme Novatron 3D-koneohjausta. Se tukee suunnitelmien mukaista toteutusta ja auttaa vähentämään turhaa kaivamista.</p>
+        <p>Kun korot ja kaltevuudet osuvat kohdalleen jo ensimmäisellä kerralla, työ etenee tehokkaasti ja sovitussa aikataulussa.</p>
+        <a class="button button-outline" href="/kalusto/">Tutustu kalustoon <Ikoni nimi="nuoli" /></a>
+      </div>
+    </div>
+  </section>
+
+  <Tarjous />
+</Sivupohja>

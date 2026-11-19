@@ -1,0 +1,85 @@
+---
+import { Image } from 'astro:assets';
+import Sivupohja from '../../layouts/Sivupohja.astro';
+import SivuHero from '../../components/SivuHero.astro';
+import Tarjous from '../../components/Tarjous.astro';
+import Ikoni from '../../components/Ikoni.astro';
+import { palvelut, TARJOUS_URL } from '../../data/sivusto.js';
+import novatron from '../../assets/kuvat/IMG-20220524-WA0005.webp';
+
+export function getStaticPaths() {
+  return palvelut.map((p, i) => ({ params: { slug: p.slug }, props: { palvelu: p, numero: i + 1 } }));
+}
+
+const { palvelu: p, numero } = Astro.props;
+const muut = palvelut.map((x, i) => ({ ...x, numero: i + 1 })).filter((x) => x.slug !== p.slug);
+---
+<Sivupohja otsikko={p.nimi} kuvaus={`${p.nimi} Pirkanmaalla – ${p.lyhyt} FromCom Oy, Kangasala.`}>
+  <SivuHero
+    kuva={p.kuva}
+    kuvaAlt={p.kuvaAlt}
+    ylaotsikko={`0${numero} / 06 · FROMCOM OY / ${p.tunniste}`}
+    otsikko={p.nimi}
+    ingressi={p.johdanto}
+    murupolku={[{ nimi: 'Palvelut', href: '/palvelut/' }, { nimi: p.nimi }]}
+  >
+    <div class="buttons">
+      <a class="button button-light" href={TARJOUS_URL}>Pyydä tarjous <Ikoni nimi="nuoli" /></a>
+      <a class="button button-outline" href="#sisaltaa">Mitä työhön kuuluu <Ikoni nimi="alas" /></a>
+    </div>
+  </SivuHero>
+
+  <section class="section" id="sisaltaa">
+    <div class="wrap split is-top">
+      <div class="prose">
+        <span class="eyebrow">01 / PALVELU</span>
+        <h2 style="margin-top:18px">{p.nimi}</h2>
+        {p.kuvaus.map((kappale) => <p>{kappale}</p>)}
+      </div>
+      <div>
+        <h3 style="margin-bottom:12px">Työhön voi kuulua</h3>
+        <ul class="checklist">{p.sisaltaa.map((s) => <li>{s}</li>)}</ul>
+        <h3 style="margin:40px 0 12px">Sopii kohteisiin</h3>
+        <ul class="checklist">{p.kohteet.map((s) => <li>{s}</li>)}</ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">02 / NÄIN PROJEKTI ETENEE</span>
+        <h2>Yhteydenotosta valmiiseen.</h2>
+      </div>
+      <ol class="steps">
+        <li><h3>Yhteydenotto</h3><p>Kerro, millaista työtä tarvitset, missä kohde sijaitsee ja millaista aikataulua toivot.</p></li>
+        <li><h3>Kartoitus ja tarjous</h3><p>Käydään läpi kohteen olosuhteet ja työn laajuus. Sovitaan tarjouksesta ja työn etenemisestä.</p></li>
+        <li><h3>Työn toteutus</h3><p>Toteutamme sovitut työt suunnitelman mukaisesti. Novatron 3D-koneohjaus tukee tarkkaa työskentelyä.</p></li>
+        <li><h3>Viimeistely ja luovutus</h3><p>Täytöt, tasaukset ja viimeistely sovitun laajuuden mukaisesti. Lopuksi käydään lopputulos yhdessä läpi.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section-tint">
+    <div class="wrap split">
+      <div class="split-media"><Image src={novatron} alt="Novatron-koneohjauksen näyttö kaivinkoneen ohjaamossa" widths={[600, 1000]} sizes="(max-width: 860px) 100vw, 50vw" loading="lazy" /></div>
+      <div class="prose">
+        <span class="eyebrow">03 / KONEOHJAUS</span>
+        <h2 style="margin-top:18px">Novatron 3D -koneohjaus.</h2>
+        <p>Koneohjaus näyttää kuljettajalle suunnitellut korot ja kaltevuudet reaaliajassa. Se tukee suunnitelmien mukaista toteutusta ja auttaa vähentämään turhaa kaivamista.</p>
+        <a class="button button-dark" href="/kalusto/">Tutustu kalustoon <Ikoni nimi="nuoli" /></a>
+      </div>
+    </div>
+  </section>
+
+  <Tarjous otsikko={`Tarvitsetko apua: ${p.nimi.toLowerCase()}?`} />
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head"><span class="eyebrow">MUUT PALVELUT</span><h2>Tutustu myös</h2></div>
+      <ul class="service-links">
+        {muut.map((m) => <li><a href={`/palvelut/${m.slug}/`}><span>0{m.numero}</span>{m.nimi}<Ikoni nimi="nuoli" koko={22} /></a></li>)}
+      </ul>
+    </div>
+  </section>
+</Sivupohja>

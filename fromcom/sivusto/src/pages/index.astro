@@ -1,0 +1,33 @@
+---
+// VÄLIAIKAINEN ETUSIVU. Korvataan demosivun etusivulla (hero, palvelut, referenssit,
+// prosessi, kartta, kumppanit, 5-vaiheinen tarjouslomake) seuraavassa vaiheessa.
+import Sivupohja from '../layouts/Sivupohja.astro';
+import SivuHero from '../components/SivuHero.astro';
+import Tarjous from '../components/Tarjous.astro';
+import Ikoni from '../components/Ikoni.astro';
+import { palvelut, TARJOUS_URL } from '../data/sivusto.js';
+import hero from '../assets/kuvat/Fromcom_hero.webp';
+---
+<Sivupohja>
+  <SivuHero
+    kuva={hero}
+    kuvaAlt="FromComin turkoosi kaivinkone kuormaa maa-ainesta työmaalla"
+    ylaotsikko="FROMCOM OY / PIRKANMAA"
+    otsikko="Maanrakennustyöt Pirkanmaalla."
+    ingressi="Perustustyöt, kunnallistekniikka, piha- ja viherrakentaminen sekä purkutyöt. Palvelemme yksityisiä ja yrityksiä koko Pirkanmaan alueella."
+  >
+    <div class="buttons">
+      <a class="button button-light" href={TARJOUS_URL}>Pyydä tarjous <Ikoni nimi="nuoli" /></a>
+      <a class="button button-outline" href="/palvelut/">Tutustu palveluihin <Ikoni nimi="nuoli" /></a>
+    </div>
+  </SivuHero>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head"><span class="eyebrow">PALVELUT</span><h2>Maanrakennuspalvelut</h2></div>
+      <ul class="service-links">
+        {palvelut.map((p, i) => <li><a href={`/palvelut/${p.slug}/`}><span>0{i + 1}</span>{p.nimi}<Ikoni nimi="nuoli" koko={22} /></a></li>)}
+      </ul>
+    </div>
+  </section>
+  <Tarjous />
+</Sivupohja>

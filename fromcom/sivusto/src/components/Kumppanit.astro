@@ -1,0 +1,17 @@
+---
+import { Image } from 'astro:assets';
+import { kumppanit } from '../data/sivusto.js';
+const logot = import.meta.glob('../assets/kuvat/partners/*', { eager: true });
+const logo = (tiedosto) => logot[`../assets/kuvat/partners/${tiedosto}`].default;
+---
+<ul class="partners">
+  {kumppanit.map((k) => (
+    <li>
+      {k.href ? (
+        <a href={k.href} target="_blank" rel="noopener"><Image src={logo(k.logo)} alt={k.nimi} width={240} loading="lazy" /></a>
+      ) : (
+        <div><Image src={logo(k.logo)} alt={k.nimi} width={240} loading="lazy" /></div>
+      )}
+    </li>
+  ))}
+</ul>

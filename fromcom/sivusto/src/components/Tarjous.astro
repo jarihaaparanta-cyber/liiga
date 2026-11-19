@@ -1,0 +1,22 @@
+---
+import { Image } from 'astro:assets';
+import Ikoni from './Ikoni.astro';
+import tausta from '../assets/kuvat/Fromcom_hero.webp';
+import { yhteyshenkilot, TARJOUS_URL } from '../data/sivusto.js';
+const { otsikko = 'Kerro kohteestasi.', teksti = 'Kerro työn tarpeista, kohteesta ja aikataulusta, niin katsotaan yhdessä sopiva toteutus.' } = Astro.props;
+---
+<section class="cta section">
+  <div class="cta-bg"><Image src={tausta} alt="" widths={[800, 1600]} sizes="100vw" loading="lazy" /></div>
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">FROMCOM OY / PYYDÄ TARJOUS</span>
+      <h2 style="margin-top:18px">{otsikko}</h2>
+      <p>{teksti}</p>
+    </div>
+    <div class="cta-actions">
+      <a class="button button-amber" href={TARJOUS_URL}>Pyydä tarjous <Ikoni nimi="nuoli" /></a>
+      <span class="eyebrow">MIELUUMMIN SOITTO?</span>
+      <a class="cta-phone" href={`tel:${yhteyshenkilot[0].tel}`}>{yhteyshenkilot[0].puhelin}</a>
+    </div>
+  </div>
+</section>

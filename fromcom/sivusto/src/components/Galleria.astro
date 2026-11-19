@@ -1,0 +1,68 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Ikoni from './Ikoni.astro';
+// kuvat: [{ kuva, alt, otsikko, tunniste }]
+const { kuvat } = Astro.props;
+const isot = await Promise.all(kuvat.map((k) => getImage({ src: k.kuva, width: 2000 })));
+---
+<div data-gallery>
+  <ul class="gallery">
+    {kuvat.map((k, i) => (
+      <li>
+        <figure>
+          <button type="button" data-index={i} aria-label={`Avaa kuva: ${k.otsikko}`}>
+            <Image src={k.kuva} alt={k.alt} widths={[480, 800]} sizes="(max-width: 520px) 100vw, (max-width: 900px) 50vw, 33vw" loading="lazy" />
+            <figcaption><span>{k.tunniste}</span><strong>{k.otsikko}</strong></figcaption>
+          </button>
+        </figure>
+      </li>
+    ))}
+  </ul>
+  <dialog class="lightbox" aria-label="Kuvan suurennos">
+    <div class="lightbox-inner">
+      <div class="lightbox-top">
+        <span class="eyebrow" data-count></span>
+        <button class="icon-button" type="button" data-close aria-label="Sulje kuva"><Ikoni nimi="sulje" koko={22} /></button>
+      </div>
+      <div class="lightbox-img"><img alt="" data-img /></div>
+      <div class="lightbox-bottom">
+        <button class="icon-button" type="button" data-prev aria-label="Edellinen kuva"><Ikoni nimi="vasen" koko={22} /></button>
+        <strong data-caption style="font-family:var(--fc-display);font-size:22px;font-weight:600;text-align:center"></strong>
+        <button class="icon-button" type="button" data-next aria-label="Seuraava kuva"><Ikoni nimi="oikea" koko={22} /></button>
+      </div>
+    </div>
+  </dialog>
+  <script type="application/json" data-items set:html={JSON.stringify(kuvat.map((k, i) => ({ src: isot[i].src, alt: k.alt, otsikko: k.otsikko })))} />
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((root) => {
+    const items = JSON.parse(root.querySelector('[data-items]')!.textContent!);
+    const dialog = root.querySelector('dialog')!;
+    const img = root.querySelector<HTMLImageElement>('[data-img]')!;
+    const caption = root.querySelector('[data-caption]')!;
+    const count = root.querySelector('[data-count]')!;
+    let current = 0;
+    let opener: HTMLElement | null = null;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const show = (i: number) => {
+      current = (i + items.length) % items.length;
+      img.src = items[current].src;
+      img.alt = items[current].alt;
+      caption.textContent = items[current].otsikko;
+      count.textContent = `${pad(current + 1)} / ${pad(items.length)}`;
+    };
+    root.querySelectorAll<HTMLButtonElement>('.gallery button').forEach((b) =>
+      b.addEventListener('click', () => { opener = b; show(Number(b.dataset.index)); dialog.showModal(); }),
+    );
+    root.querySelector('[data-close]')!.addEventListener('click', () => dialog.close());
+    root.querySelector('[data-prev]')!.addEventListener('click', () => show(current - 1));
+    root.querySelector('[data-next]')!.addEventListener('click', () => show(current + 1));
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(current - 1);
+      if (e.key === 'ArrowRight') show(current + 1);
+    });
+    dialog.addEventListener('click', (e) => { if (e.target === dialog || e.target === dialog.firstElementChild) dialog.close(); });
+    dialog.addEventListener('close', () => opener?.focus());
+  });
+</script>

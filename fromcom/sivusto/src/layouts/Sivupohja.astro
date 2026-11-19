@@ -1,0 +1,144 @@
+---
+import '../styles/global.css';
+import Ikoni from '../components/Ikoni.astro';
+import { yritys, yhteyshenkilot, valikko, palvelut, TARJOUS_URL } from '../data/sivusto.js';
+
+const { otsikko, kuvaus = 'FromCom Oy tekee maanrakennustöitä Kangasalta käsin koko Pirkanmaalla: perustustyöt, kunnallistekniikka, vesi- ja viemärityöt, pihat, raivaukset ja purkutyöt.' } = Astro.props;
+const sivunOtsikko = otsikko ? `${otsikko} | FromCom Oy` : 'FromCom Oy — Maanrakennustyöt Pirkanmaalla';
+const polku = Astro.url.pathname;
+const onAktiivinen = (href) => (href === '/' ? polku === '/' : polku.startsWith(href));
+const vuosi = new Date().getFullYear();
+---
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{sivunOtsikko}</title>
+    <meta name="description" content={kuvaus} />
+    <meta property="og:title" content={sivunOtsikko} />
+    <meta property="og:description" content={kuvaus} />
+    <meta property="og:locale" content="fi_FI" />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Manrope:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <a class="skip" href="#sisalto">Siirry sisältöön</a>
+
+    <header class="header" data-header>
+      <div class="wrap header-inner">
+        <a class="logo" href="/" aria-label="FromCom Oy, etusivu"><img src="/logo.svg" alt="FromCom Oy" width="150" height="97" /></a>
+        <nav class="nav" aria-label="Päävalikko">
+          <ul>
+            {valikko.map((v) => (
+              <li class={v.href === '/palvelut/' ? 'has-sub' : undefined}>
+                <a href={v.href} aria-current={onAktiivinen(v.href) ? 'page' : undefined}>{v.nimi}</a>
+                {v.href === '/palvelut/' && (
+                  <ul class="sub">
+                    {palvelut.map((p, i) => (
+                      <li><a href={`/palvelut/${p.slug}/`}><b>0{i + 1}</b>{p.nimi}</a></li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+          <a class="button button-outline nav-cta" href={TARJOUS_URL}>Pyydä tarjous <Ikoni nimi="nuoli" koko={16} /></a>
+        </nav>
+        <button class="menu-toggle" type="button" aria-label="Avaa valikko" aria-expanded="false" aria-controls="mobiilivalikko" data-menu-open>
+          <Ikoni nimi="valikko" koko={22} />
+        </button>
+      </div>
+    </header>
+
+    <div class="mobile-menu" id="mobiilivalikko" data-menu>
+      <div class="mobile-top">
+        <a class="logo" href="/"><img src="/logo.svg" alt="FromCom Oy" width="150" height="97" /></a>
+        <button class="menu-toggle" style="display:inline-flex" type="button" aria-label="Sulje valikko" data-menu-close>
+          <Ikoni nimi="sulje" koko={22} />
+        </button>
+      </div>
+      <nav aria-label="Mobiilivalikko">
+        <ul>
+          {valikko.map((v, i) => (
+            <li>
+              <a href={v.href} aria-current={onAktiivinen(v.href) ? 'page' : undefined}><span>0{i + 1}</span>{v.nimi}</a>
+              {v.href === '/palvelut/' && (
+                <ul class="mobile-sub">
+                  {palvelut.map((p) => <li><a href={`/palvelut/${p.slug}/`}>{p.nimi}</a></li>)}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div class="mobile-bottom">
+        <a class="button button-amber" href={TARJOUS_URL}>Pyydä tarjous <Ikoni nimi="nuoli" /></a>
+        <a class="button button-outline" href={`tel:${yhteyshenkilot[0].tel}`}>{yhteyshenkilot[0].puhelin} <Ikoni nimi="puhelin" /></a>
+        <span class="eyebrow">KANGASALA / KOKO PIRKANMAA</span>
+      </div>
+    </div>
+
+    <main id="sisalto">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div class="footer-top">
+          <div>
+            <a class="logo" href="/"><img src="/logo.svg" alt="FromCom Oy" width="170" height="110" loading="lazy" /></a>
+            <p>{yritys.iskulause}</p>
+          </div>
+          <div>
+            <h2>YHTEYSTIEDOT</h2>
+            {yhteyshenkilot.map((h) => (
+              <div class="footer-contact">
+                <strong>{h.nimi}</strong>
+                <a href={`tel:${h.tel}`}>{h.puhelin}</a>
+                <a href={`mailto:${h.email}`}>{h.email}</a>
+              </div>
+            ))}
+          </div>
+          <div>
+            <h2>OSOITE</h2>
+            <p>{yritys.nimi}<br />{yritys.katuosoite}<br />{yritys.postinumero} {yritys.kaupunki}</p>
+          </div>
+          <div>
+            <h2>SIVUSTO</h2>
+            <ul>
+              {valikko.map((v) => <li><a href={v.href}>{v.nimi}</a></li>)}
+              <li><a href="/tietosuoja/">Tietosuoja</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© {vuosi} {yritys.nimi}</span>
+          <span>Maanrakennusta Kangasalta käsin, koko Pirkanmaalla.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const header = document.querySelector('[data-header]');
+      const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 48);
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      const menu = document.querySelector('[data-menu]');
+      const openBtn = document.querySelector('[data-menu-open]');
+      const closeBtn = document.querySelector('[data-menu-close]');
+      const setMenu = (open) => {
+        menu?.classList.toggle('is-open', open);
+        openBtn?.setAttribute('aria-expanded', String(open));
+        document.body.style.overflow = open ? 'hidden' : '';
+        if (open) closeBtn?.focus(); else openBtn?.focus();
+      };
+      openBtn?.addEventListener('click', () => setMenu(true));
+      closeBtn?.addEventListener('click', () => setMenu(false));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu?.classList.contains('is-open')) setMenu(false); });
+    </script>
+  </body>
+</html>

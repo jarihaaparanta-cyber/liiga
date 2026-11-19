@@ -1,0 +1,70 @@
+---
+import { Image } from 'astro:assets';
+import Sivupohja from '../layouts/Sivupohja.astro';
+import SivuHero from '../components/SivuHero.astro';
+import Kumppanit from '../components/Kumppanit.astro';
+import Tarjous from '../components/Tarjous.astro';
+import Ikoni from '../components/Ikoni.astro';
+import { yhteyshenkilot } from '../data/sivusto.js';
+import hero from '../assets/kuvat/FromCom_2.webp';
+import tiimi from '../assets/kuvat/IMG-20230131-WA0004.jpg';
+---
+<Sivupohja otsikko="Yritys" kuvaus="FromCom Oy on kangasalalainen maanrakennusyritys, joka palvelee yksityisiä ja yrityksiä koko Pirkanmaalla.">
+  <SivuHero
+    kuva={hero}
+    kuvaAlt="Maanrakennustyömaa, kaivinkone ja järvimaisema"
+    ylaotsikko="FROMCOM OY / YRITYS"
+    otsikko="Maanrakennusta pienistä kohteista suuriin urakoihin."
+    ingressi="Laadukasta ja luotettavaa maanrakennuspalvelua Kangasalta käsin, koko Pirkanmaalla."
+    murupolku={[{ nimi: 'Yritys' }]}
+  />
+
+  <section class="section">
+    <div class="wrap split">
+      <div class="prose">
+        <span class="eyebrow">01 / FROMCOM OY</span>
+        <h2 style="margin-top:18px">Tärkeintä meille on tyytyväinen asiakas.</h2>
+        <p>FromCom Oy tarjoaa laadukasta ja luotettavaa maanrakennuspalvelua koko Pirkanmaalla. Palvelemme yksityisiä ja yrityksiä niin pienissä töissä kuin suuremmissakin urakoissa.</p>
+        <p>Toteutamme työt tehokkaasti ja sovitussa aikataulussa. Hyödynnämme Novatron 3D-koneohjausta, joka tukee tarkkaa työskentelyä ja auttaa vähentämään turhaa kaivamista.</p>
+        <p>Palveluihimme kuuluvat rakennusten perustustyöt, kunnallistekniset työt, vesi- ja viemärityöt, piha- ja viherrakentaminen, tonttien raivaukset sekä rakennusten purkutyöt. Oli suunnittelemasi työ iso tai pieni, katsotaan yhdessä, kuinka voimme olla avuksi.</p>
+        <dl class="facts">
+          <div><dt>Kotipaikka</dt><dd>Kangasala</dd></div>
+          <div><dt>Toiminta-alue</dt><dd>Koko Pirkanmaa</dd></div>
+          <div><dt>Palvelemme</dt><dd>Yksityiset ja yritykset</dd></div>
+        </dl>
+      </div>
+      <div class="split-media"><Image src={tiimi} alt="Kaksi työvaatteisiin pukeutunutta miestä oranssin kaivinkoneen ohjaamon luona" widths={[600, 1000]} sizes="(max-width: 860px) 100vw, 50vw" loading="lazy" /></div>
+    </div>
+  </section>
+
+  <section class="section section-tint">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">02 / YHTEYSHENKILÖT</span>
+        <h2>Ota yhteyttä suoraan.</h2>
+      </div>
+      <div class="people">
+        {yhteyshenkilot.map((h) => (
+          <div class="person">
+            <h3>{h.nimi}</h3>
+            <a href={`tel:${h.tel}`}><Ikoni nimi="puhelin" />{h.puhelin}</a>
+            <a href={`mailto:${h.email}`}><Ikoni nimi="posti" />{h.email}</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">03 / VERKOSTO</span>
+        <h2>Yhteistyökumppanit</h2>
+        <p>Teemme yhteistyötä luotettavien kumppaneiden kanssa.</p>
+      </div>
+      <Kumppanit />
+    </div>
+  </section>
+
+  <Tarjous />
+</Sivupohja>
